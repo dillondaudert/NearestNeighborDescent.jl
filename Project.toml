@@ -1,0 +1,7 @@
+name = "NNDescent"
+uuid = "1dd1f7d0-b91d-11e8-266b-d34208f3077b"
+authors = ["Dillon Daudert <dillongdaudert@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
