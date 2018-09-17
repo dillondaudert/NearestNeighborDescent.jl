@@ -47,7 +47,13 @@ function _nn_descent(data::Vector{V},
 
 
     # B[v] = sample(data, k) x {<inf,true>} for all v ∈ data
+    knn_tree = _init_knn_tree(data, n_neighbors)
     while true
+        # NOTE: For this to be efficient, I need a data structure that has key
+        #       => value pairs, where the keys are data indexes, and the values
+        #       are distances.
+        #       The data structure must also be ordered, sorted on values.
+
         # parallel for v in data
         #     old[v] = all in B[v] with false flag
         #     new[v] = rho*k items in B[v] with true flag
