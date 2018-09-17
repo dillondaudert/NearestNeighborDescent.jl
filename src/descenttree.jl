@@ -39,9 +39,9 @@ end
 
 function _nn_descent(data::Vector{V},
                      metric::Metric,
-                     k::Int,
-                     ρ::R,
-                     δ::R = 0.001,
+                     n_neighbors::Int,
+                     sample_rate::R,
+                     precision::R = 0.001,
                     ) where {V <: AbstractArray, R <: AbstractFloat}
     n_p = length(data)
 
@@ -62,32 +62,36 @@ function _nn_descent(data::Vector{V},
         #        // c and B[.] are synchronized
         #        c = c + updateNN(B[u1], <u2, l, true>)
         #        c = c + updateNN(B[u2], <u1, l, true>)
-        if  c < ρ*k*length(data)
+        if  c < sample_rate*n_neighbors*length(data)
             break
         end
     end
     return knn_tree
 end
 
+"""
+Create an array of min-heaps B[j] for each j in the data.
+Each minheap is initialized with `n_neighbors` random points from the data,
+with distances set to `Inf` and local join flag `true`.
+"""
 function _init_knn_tree(data::Vector{V},
-                        n_neighbors::Int,
-                        sample_rate::R) where {V <: AbstractArray, R <: AbstractFloat}
+                        n_neighbors::Int) where {V <: AbstractArray}
     n_p = length(data)
-    knn_tree = [mutable_binary_minheap(Tuple(eltype(V), Bool)) for _ in 1:n_p]
+    knn_tree = [mutable_binary_minheap(NNTuple{Int,eltype(V),Bool}) for _ in 1:n_p]
     for p in 1:n_p
         k_idxs = sample_neighbors(n_p, n_neighbors)
         for idx in k_idxs
-            push!(knn_tree[p], (idx, Inf, true))
+            push!(knn_tree[p], NNTuple(idx, Inf, true))
         end
     end
+    return knn_tree
 end
-
-
 
 
 function sample_neighbors(n_points::Int,
                           n_neighbors::Int,
                           sample_rate::R = 1.) where {R <: AbstractFloat}
-    idxs = randperm(n_points)[1:trunc(Int, sample_rate*n_neighbors)]
+    last = min(n_points, trunc(Int, sample_rate*n_neighbors))
+    idxs = randperm(n_points)[1:last]
     return idxs
 end
