@@ -93,3 +93,11 @@ function _init_knn_tree(data::Vector{V},
     end
     return knn_tree
 end
+
+function sample_neighbors(n_points::Int,
+                          n_neighbors::Int,
+                          sample_rate::R = 1.) where {R <: AbstractFloat}
+    last = min(n_points, trunc(Int, sample_rate*n_neighbors))
+    idxs = randperm(n_points)[1:last]
+    return idxs
+end

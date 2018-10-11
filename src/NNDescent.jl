@@ -9,9 +9,8 @@ import Distances: Metric, evaluate
 using DataStructures
 import DataStructures: mutable_binary_minheap
 
-include("descenttree.jl")
+include("basic_nndescent.jl")
 
-export DescentTree, NNTuple
-export knn
+export NNDescentTree, _NNTuple
 
 end # module
