@@ -101,3 +101,8 @@ end
         @test bw[5] == [1]
     end
 end
+
+@testset "basic_nndescent tests" begin
+    data = [rand(5) for _ in 1:50]
+    k = 5
+end

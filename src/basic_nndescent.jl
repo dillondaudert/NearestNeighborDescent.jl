@@ -41,27 +41,20 @@ function _nn_descent(data::Vector{V},
                     ) where {V <: AbstractArray}
     n_p = length(data)
 
-    # B[v] = sample(V,K) x {∞}, ∀ v ∈ V
-    _knn = _init_knn_tree(data, k)
+    # initialize with random neighbors
+    knn_tree = _init_knn_tree(data, k)
 
+    # until no further updates
     while true
-        _neigbhors = get_reverse(_knn)
-
-        # B̄ = B ∪ R
-        # get the set of all general neighbors of each point
-        # in this case, we just add the forward neighbors to _rev_knn
-        for i in 1:n_p
-            for j in 1:k
-                # add neighbor j.idx to neighbors of i
-                union!(_neighbors[i], _knn[i][j].idx)
-            end
-        end
+        # get the fw and bw neighbors of each point
+        _neighbors = [union(_fw_neighbors(knn_tree)[i],
+                      _bw_neighbors(knn_tree)[i]) for i in 1:n_p]
         c = 0
-        # for v ∈ V
+        # calculate distances to neighbors' neighbors
         for i in 1:n_p
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
-                # l = evaluate(metric, v, u₂)
-                # c = c + UpdateNN(B[v], <u₂, l>)
+                d = evaluate(metric, data[i], data[u₂])
+                c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d))
             end
         end
         if c == 0
@@ -69,6 +62,22 @@ function _nn_descent(data::Vector{V},
         end
     end
     return knn_tree
+end
+
+"""
+Update the nearest neighbors of point `v`.
+If `u` is closer than the furthest k-NN of `v`, it will be added
+to the neighbors of `v`.
+"""
+function _update_nn(knn_tree::Vector{R},
+                    v::Int,
+                    u::_NNTuple{S, T}) where {R, S, T}
+    n, i = top_with_handle(knn_tree)
+    if u.dist < n.dist
+        update!(knn_tree, i, u)
+        return 1
+    end
+    return 0
 end
 
 """
