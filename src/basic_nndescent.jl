@@ -62,6 +62,7 @@ function _nn_descent(data::Vector{V},
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
                 # l = evaluate(metric, v, u₂)
                 # c = c + UpdateNN(B[v], <u₂, l>)
+            end
         end
         if c == 0
             break

@@ -50,7 +50,6 @@ end
             t = pop!(knn_tree[p])
             @test t.idx ≤ length(data)
             @test t.dist == Inf
-            @test t.flag
         end
     end
 end
