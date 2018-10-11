@@ -70,3 +70,8 @@ end
         end
     end
 end
+
+@testset "neighbors tests" begin
+    # create
+    knn_tree = NNDescent._init_knn_tree()
+end

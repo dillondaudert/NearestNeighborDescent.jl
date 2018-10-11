@@ -71,15 +71,29 @@ function _nn_descent(data::Vector{V},
     return knn_tree
 end
 
-function get_reverse(knn::R) where {R}
-    reverse_neighbors = [Set([]) for _ in 1:length(knn)]
+"""
+Get the backward neighbors of each point in a KNN tree, `knn`,
+as an array of ids.
+"""
+function _bw_neighbors(knn::Vector{R}) where {R}
+    bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     for i in 1:length(knn)
         for j in 1:length(knn[i])
             # add incoming edge i of jth NN of i with index idx
-            union!(reverse_neighbors[knn[i][j].idx], i)
+            append!(bw_neighbors[knn[i][j].idx], i)
         end
     end
-    return reverse_neighbors
+    return bw_neighbors
+end
+
+"""
+Get the forward neighbors of each point in a KNN tree, `knn`,
+as an array of ids.
+"""
+function _fw_neighbors(knn::Vector{R}) where {R}
+    fw_neighbors = [[knn[i][j].idx for j in 1:length(knn[i])]
+                        for i in length(knn)]
+    return fw_neighbors
 end
 
 function _init_knn_tree(data::Vector{V},
