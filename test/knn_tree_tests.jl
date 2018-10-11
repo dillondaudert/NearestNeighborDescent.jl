@@ -35,6 +35,23 @@
         idxs = NNDescent.sample_neighbors(length(points), 2*length(points), ρ)
         @test length(idxs) == length(points)
     end
+    @testset "exclude set tests" begin
+        points = collect(1:10)
+
+        # exclude 1
+        idxs = NNDescent.sample_neighbors(length(points),
+                                          length(points),
+                                          exclude=[1])
+        @test idxs ⊊ points
+        @test !(1 ∈ idxs)
+
+        # exclude all
+        idxs = NNDescent.sample_neighbors(length(points),
+                                          length(points),
+                                          exclude=points)
+        @test length(idxs) == 0
+
+    end
 end
 
 @testset "_init_knn_tree tests" begin

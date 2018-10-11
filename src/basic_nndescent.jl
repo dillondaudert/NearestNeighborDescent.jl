@@ -95,10 +95,15 @@ function _init_knn_tree(data::Vector{V},
     return knn_tree
 end
 
+"""
+Sample `n_neighbors` elements from a set of ints `1:n_points`.
+The ints in `exclude` won't be sampled.
+"""
 function sample_neighbors(n_points::Int,
                           n_neighbors::Int,
-                          sample_rate::R = 1.) where {R <: AbstractFloat}
-    last = min(n_points, trunc(Int, sample_rate*n_neighbors))
-    idxs = randperm(n_points)[1:last]
+                          sample_rate::R = 1.;
+                          exclude::Vector{Int} = Vector{Int}()) where {R <: AbstractFloat}
+    last = min(n_points-length(exclude), trunc(Int, sample_rate*n_neighbors))
+    idxs = setdiff(randperm(n_points), exclude)[1:last]
     return idxs
 end
