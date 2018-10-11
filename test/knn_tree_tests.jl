@@ -72,6 +72,32 @@ end
 end
 
 @testset "neighbors tests" begin
-    # create
-    knn_tree = NNDescent._init_knn_tree()
+    # create tree
+    knn_tree = [mutable_binary_maxheap(_NNTuple{Int, Float64}) for _ in 1:5]
+    # add some neighbors
+    push!(knn_tree[1], _NNTuple(2, Inf))
+    push!(knn_tree[1], _NNTuple(5, Inf))
+    push!(knn_tree[2], _NNTuple(4, Inf))
+    push!(knn_tree[3], _NNTuple(2, Inf))
+    push!(knn_tree[3], _NNTuple(4, Inf))
+    push!(knn_tree[4], _NNTuple(1, Inf))
+    push!(knn_tree[5], _NNTuple(3, Inf))
+    push!(knn_tree[5], _NNTuple(4, Inf))
+
+    @testset "fw neighbors tests" begin
+        fw = _fw_neighbors(knn_tree)
+        @test fw[1] == [2, 5]
+        @test fw[2] == [4]
+        @test fw[3] == [2, 4]
+        @test fw[4] == [1]
+        @test fw[5] == [3, 4]
+    end
+    @testset "bw neighbors tests" begin
+        bw = _bw_neighbors(knn_tree)
+        @test bw[1] == [4]
+        @test bw[2] == [1, 3]
+        @test bw[3] == [5]
+        @test bw[4] == [2, 3, 5]
+        @test bw[5] == [1]
+    end
 end
