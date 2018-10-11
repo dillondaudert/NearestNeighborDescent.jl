@@ -72,9 +72,9 @@ to the neighbors of `v`.
 function _update_nn(knn_tree::Vector{R},
                     v::Int,
                     u::_NNTuple{S, T}) where {R, S, T}
-    n, i = top_with_handle(knn_tree)
+    n, i = top_with_handle(knn_tree[v])
     if u.dist < n.dist
-        update!(knn_tree, i, u)
+        update!(knn_tree[v], i, u)
         return 1
     end
     return 0
