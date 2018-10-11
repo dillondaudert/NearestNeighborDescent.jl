@@ -92,7 +92,7 @@ as an array of ids.
 """
 function _fw_neighbors(knn::Vector{R}) where {R}
     fw_neighbors = [[knn[i][j].idx for j in 1:length(knn[i])]
-                        for i in length(knn)]
+                        for i in 1:length(knn)]
     return fw_neighbors
 end
 
