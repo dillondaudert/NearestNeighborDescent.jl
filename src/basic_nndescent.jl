@@ -1,6 +1,6 @@
 # A simple NN tree implementation
 import Random: randperm
-import Base: <
+import Base: <, isless
 
 struct _NNTuple{R, S}
     idx::R
@@ -8,6 +8,7 @@ struct _NNTuple{R, S}
 end
 
 <(a::_NNTuple, b::_NNTuple) = a.dist < b.dist
+isless(a::_NNTuple, b::_NNTuple) = <(a, b)
 
 struct NNDescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
@@ -39,8 +40,8 @@ function _nn_descent(data::Vector{V},
                      metric::Metric,
                      k::Int,
                     ) where {V <: AbstractArray}
-    n_p = length(data)
 
+    n_p = length(data)
     # initialize with random neighbors
     knn_tree = _init_knn_tree(data, k)
 
