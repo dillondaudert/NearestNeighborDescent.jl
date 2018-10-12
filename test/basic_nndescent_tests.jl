@@ -1,6 +1,6 @@
 using Distances: Euclidean
 
-@testset "brute_knn tests" begin
+@testset "knn tests" begin
     data = [[0., 0., 0.],
             [0., 0., 1.],
             [0., 1., 0.],
@@ -18,6 +18,11 @@ using Distances: Euclidean
                 2 5 8;
                 3 5 8;
                 4 6 7]
-    @test _3nn == true_3nn
-
+    @testset "brute knn test" begin
+        @test _3nn == true_3nn
+    end
+    @testset "basic_nndescent tests" begin
+        nndescent_3nn = _nn_descent(data, Euclidean(), 3)
+        @show nndescent_3nn
+    end
 end

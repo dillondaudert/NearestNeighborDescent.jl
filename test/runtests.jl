@@ -1,6 +1,6 @@
 # tests
 using NNDescent
-using NNDescent: _fw_neighbors, _bw_neighbors, brute_knn
+using NNDescent: _fw_neighbors, _bw_neighbors, brute_knn, _nn_descent
 using Test
 using DataStructures: mutable_binary_maxheap
 

@@ -111,7 +111,7 @@ function _init_knn_tree(data::Vector{V},
     n_p = length(data)
     knn_tree = [mutable_binary_maxheap(_NNTuple{Int, eltype(V)}) for _ in 1:n_p]
     for p in 1:n_p
-        k_idxs = sample_neighbors(n_p, n_neighbors)
+        k_idxs = sample_neighbors(n_p, n_neighbors, exclude=[p])
         for idx in k_idxs
             push!(knn_tree[p], _NNTuple(idx, Inf))
         end
