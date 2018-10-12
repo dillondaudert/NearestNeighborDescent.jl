@@ -102,7 +102,10 @@ end
     end
 end
 
-@testset "basic_nndescent tests" begin
-    data = [rand(5) for _ in 1:50]
-    k = 5
+@testset "_update_nn tests" begin
+    knn_tree = [mutable_binary_maxheap(_NNTuple{Int, Float64})]
+    push!(knn_tree[1], _NNTuple(2, 10.))
+    push!(knn_tree[1], _NNTuple(5, 20.))
+    _update_nn(knn_tree, 1, _NNTuple(3, 8.))
+    @test top(knn_tree[1]) == _NNTuple(2, 10.)
 end

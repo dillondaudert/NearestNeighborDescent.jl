@@ -54,8 +54,10 @@ function _nn_descent(data::Vector{V},
         # calculate distances to neighbors' neighbors
         for i in 1:n_p
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
-                d = evaluate(metric, data[i], data[u₂])
-                c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d))
+                if i < u₂
+                    d = evaluate(metric, data[i], data[u₂])
+                    c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d))
+                end
             end
         end
         if c == 0
@@ -74,6 +76,7 @@ function _update_nn(knn_tree::Vector{R},
                     v::Int,
                     u::_NNTuple{S, T}) where {R, S, T}
     n, i = top_with_handle(knn_tree[v])
+
     if u.dist < n.dist
         update!(knn_tree[v], i, u)
         return 1
