@@ -23,6 +23,7 @@ using Distances: Euclidean
     end
     @testset "basic_nndescent tests" begin
         nndescent_3nn = _nn_descent(data, Euclidean(), 3)
+        _7nn = brute_knn(data, Euclidean(), 7)
         @show nndescent_3nn
     end
 end
