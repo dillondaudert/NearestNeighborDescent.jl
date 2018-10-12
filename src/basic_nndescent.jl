@@ -48,16 +48,19 @@ function _nn_descent(data::Vector{V},
     # until no further updates
     while true
         # get the fw and bw neighbors of each point
-        _neighbors = [union(_fw_neighbors(knn_tree)[i],
-                      _bw_neighbors(knn_tree)[i]) for i in 1:np]
+        fw = _fw_neighbors(knn_tree)
+        bw = _bw_neighbors(knn_tree)
+        _neighbors = [union(fw[i], bw[i]) for i in 1:np]
         c = 0
         # calculate distances to neighbors' neighbors
         for i in 1:np
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
                 if i < u₂
                     d = evaluate(metric, data[i], data[u₂])
-                    c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d))
-                    c = c + _update_nn(knn_tree, u₂, _NNTuple(i, d))
+                    c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d),
+                                        u₂ in fw[i])
+                    c = c + _update_nn(knn_tree, u₂, _NNTuple(i, d),
+                                        i in fw[u₂])
                 end
             end
         end
@@ -81,12 +84,29 @@ to the neighbors of `v`.
 """
 function _update_nn(knn_tree::Vector{R},
                     v_idx::Int,
-                    u::_NNTuple{S, T}) where {R, S, T}
-    n, i = top_with_handle(knn_tree[v_idx])
+                    u::_NNTuple{S, T},
+                    exists::Bool = false) where {R, S, T}
 
-    if u.dist < n.dist
+    if exists
+        # pop and store values until we find u.idx
+        vals = []
+        while top(knn_tree[v_idx]).idx != u.idx
+            append!(vals, pop!(knn_tree[v_idx]))
+        end
+        # update value of u.idx
+        n, i = top_with_handle(knn_tree[v_idx])
         update!(knn_tree[v_idx], i, u)
+        # push previously pop'd values
+        for i in 1:length(vals)
+            push!(knn_tree[v_idx], vals[i])
+        end
         return 1
+    else
+        n, i = top_with_handle(knn_tree[v_idx])
+        if u.dist < n.dist
+            update!(knn_tree[v_idx], i, u)
+            return 1
+        end
     end
     return 0
 end
