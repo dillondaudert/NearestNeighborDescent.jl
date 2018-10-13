@@ -57,10 +57,10 @@ function _nn_descent(data::Vector{V},
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
                 if i < u₂
                     d = evaluate(metric, data[i], data[u₂])
-                    c = c + _update_nn(knn_tree, i, _NNTuple(u₂, d),
-                                        u₂ in fw[i])
-                    c = c + _update_nn(knn_tree, u₂, _NNTuple(i, d),
-                                        i in fw[u₂])
+                    c = c + _update_nn!(knn_tree, i, _NNTuple(u₂, d),
+                                       u₂ in fw[i])
+                    c = c + _update_nn!(knn_tree, u₂, _NNTuple(i, d),
+                                       i in fw[u₂])
                 end
             end
         end
@@ -80,33 +80,33 @@ end
 """
 Update the nearest neighbors of point `v`.
 """
-function _update_nn(knn_tree,
-                    v_idx::Int,
-                    u::_NNTuple{S, T},
-                    exists::Bool = false) where {R, S, T}
+function _update_nn!(v_knn,
+                     u::_NNTuple{S, T},
+                     exists::Bool = false) where {S, T}
 
     if exists
-        # pop and store values until we find u.idx
-        vals = []
-        while top(knn_tree[v_idx]).idx != u.idx
-            append!(vals, pop!(knn_tree[v_idx]))
+        # update value of u in v_knn
+        for i in 1:length(v_knn)
+            if v_knn[i].idx == u.idx
+                if u.dist < v_knn[i].dist
+                    v_knn[i] = u
+                    break
+                else
+                    # no update made since distances were equal
+                    return 0
+                end
+            end
         end
-        # update value of u.idx
-        n, i = top_with_handle(knn_tree[v_idx])
-        update!(knn_tree[v_idx], i, u)
-        # push previously pop'd values
-        for i in 1:length(vals)
-            push!(knn_tree[v_idx], vals[i])
-        end
-        return 1
+    elseif u.dist < v_knn[end].dist
+        # u is a new nearest neighbor
+        v_knn[end] = u
     else
-        n, i = top_with_handle(knn_tree[v_idx])
-        if u.dist < n.dist
-            update!(knn_tree[v_idx], i, u)
-            return 1
-        end
+        # no updates, so return 0
+        return 0
     end
-    return 0
+    # use insertion sort since the array is mostly sorted (only 1 change)
+    sort!(v_knn, alg=InsertionSort)
+    return 1
 end
 
 """
