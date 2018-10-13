@@ -55,12 +55,10 @@ function _nn_descent(data::Vector{V},
         # calculate distances to neighbors' neighbors
         for i in 1:np
             for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
-                if i < u₂
+                if i ≠ u₂
                     d = evaluate(metric, data[i], data[u₂])
-                    c = c + _update_nn!(knn_tree, i, _NNTuple(u₂, d),
-                                       u₂ in fw[i])
-                    c = c + _update_nn!(knn_tree, u₂, _NNTuple(i, d),
-                                       i in fw[u₂])
+                    #print(u₂, " in ", fw[i], " = ", u₂ in fw[i], "\n")
+                    c = c + _update_nn!(knn_tree[i], _NNTuple(u₂, d))
                 end
             end
         end
@@ -68,7 +66,6 @@ function _nn_descent(data::Vector{V},
             break
         end
     end
-    @show knn_tree
     knn_ids = zeros(Int, (np, k))
     for i = 1:np, j = 1:k
         knn_ids[i, j] = pop!(knn_tree[i]).idx
@@ -81,32 +78,38 @@ end
 Update the nearest neighbors of point `v`.
 """
 function _update_nn!(v_knn,
-                     u::_NNTuple{S, T},
-                     exists::Bool = false) where {S, T}
+                     u::_NNTuple{S, T}) where {S, T}
 
-    if exists
-        # update value of u in v_knn
+    exists, updated = false, false
+    if u.dist < v_knn[end].dist
+        # this point is closer than the furthest nearest neighbor
+        # either this point exists - we update if Inf, otherwise no update
+        #   or this point is not already a NN, so we add.
+
+        # check if point in kNN and update if distance is Inf
         for i in 1:length(v_knn)
             if v_knn[i].idx == u.idx
-                if u.dist < v_knn[i].dist
+                exists = true
+                if v_knn[i].dist == Inf
                     v_knn[i] = u
+                    updated = true
                     break
-                else
-                    # no update made since distances were equal
-                    return 0
                 end
             end
         end
-    elseif u.dist < v_knn[end].dist
-        # u is a new nearest neighbor
-        v_knn[end] = u
-    else
-        # no updates, so return 0
-        return 0
+        if !exists
+            # u is a new nearest neighbor
+            v_knn[end] = u
+            updated = true
+        end
+
+        if updated
+            # use insertion sort since the array is mostly sorted (only 1 change)
+            sort!(v_knn, alg=InsertionSort)
+            return 1
+        end
     end
-    # use insertion sort since the array is mostly sorted (only 1 change)
-    sort!(v_knn, alg=InsertionSort)
-    return 1
+    return 0
 end
 
 """

@@ -108,12 +108,12 @@ end
     end
     @testset "exists tests" begin
         v_knn = [_NNTuple(1, 10.), _NNTuple(2, 20.), _NNTuple(3, Inf)]
-        @test _update_nn!(v_knn, _NNTuple(3, 5.), true) == 1
+        @test _update_nn!(v_knn, _NNTuple(3, 5.)) == 1
         @test v_knn[1].idx == 3
         @test v_knn[1].dist == 5.
         @test v_knn[end].idx == 2
         @test v_knn[end].dist == 20.
-        @test _update_nn!(v_knn, _NNTuple(3, 5.), true) == 0
+        @test _update_nn!(v_knn, _NNTuple(3, 5.)) == 0
     end
     @testset "new nearest neighbor tests" begin
         v_knn = [_NNTuple(1, 10.), _NNTuple(2, 20.), _NNTuple(3, 30.)]

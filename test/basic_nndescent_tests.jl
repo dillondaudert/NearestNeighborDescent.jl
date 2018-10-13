@@ -22,6 +22,7 @@ using Distances: Euclidean
         @test _3nn == true_3nn
     end
     @testset "basic_nndescent tests" begin
-        
+        descent_3nn = _nn_descent(data, Euclidean(), 3)
+        @test sort(descent_3nn, dims=2) == sort(true_3nn, dims=2)
     end
 end
