@@ -22,10 +22,6 @@ using Distances: Euclidean
         @test _3nn == true_3nn
     end
     @testset "basic_nndescent tests" begin
-        data = [rand(5) for _ in 1:50]
-        nndescent_5nn = _nn_descent(data, Euclidean(), 5)
-        _5nn = brute_knn(data, Euclidean(), 5)
-        @show nndescent_5nn
-        @show _5nn
+        
     end
 end

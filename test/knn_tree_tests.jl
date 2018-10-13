@@ -63,8 +63,8 @@ end
     @test length(knn_tree) == length(data)
     for p in 1:length(knn_tree)
         @test length(knn_tree[p]) == n_neighbors
-        while !isempty(knn_tree[p])
-            t = pop!(knn_tree[p])
+        for t in knn_tree[p]
+            @test t.idx ≠ p
             @test t.idx ≤ length(data)
             @test t.dist == Inf
         end
@@ -73,16 +73,11 @@ end
 
 @testset "neighbors tests" begin
     # create tree
-    knn_tree = [mutable_binary_maxheap(_NNTuple{Int, Float64}) for _ in 1:5]
-    # add some neighbors
-    push!(knn_tree[1], _NNTuple(2, Inf))
-    push!(knn_tree[1], _NNTuple(5, Inf))
-    push!(knn_tree[2], _NNTuple(4, Inf))
-    push!(knn_tree[3], _NNTuple(2, Inf))
-    push!(knn_tree[3], _NNTuple(4, Inf))
-    push!(knn_tree[4], _NNTuple(1, Inf))
-    push!(knn_tree[5], _NNTuple(3, Inf))
-    push!(knn_tree[5], _NNTuple(4, Inf))
+    knn_tree = [[_NNTuple(2, Inf), _NNTuple(5, Inf)],
+                [_NNTuple(4, Inf)],
+                [_NNTuple(2, Inf), _NNTuple(4, Inf)],
+                [_NNTuple(1, Inf)],
+                [_NNTuple(3, Inf), _NNTuple(4, Inf)]]
 
     @testset "fw neighbors tests" begin
         fw = _fw_neighbors(knn_tree)

@@ -79,10 +79,8 @@ end
 
 """
 Update the nearest neighbors of point `v`.
-If `u` is closer than the furthest k-NN of `v`, it will be added
-to the neighbors of `v`.
 """
-function _update_nn(knn_tree::Vector{R},
+function _update_nn(knn_tree,
                     v_idx::Int,
                     u::_NNTuple{S, T},
                     exists::Bool = false) where {R, S, T}
@@ -115,7 +113,7 @@ end
 Get the backward neighbors of each point in a KNN tree, `knn`,
 as an array of ids.
 """
-function _bw_neighbors(knn::Vector{R}) where {R}
+function _bw_neighbors(knn)
     bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     for i in 1:length(knn)
         for j in 1:length(knn[i])
@@ -130,7 +128,7 @@ end
 Get the forward neighbors of each point in a KNN tree, `knn`,
 as an array of ids.
 """
-function _fw_neighbors(knn::Vector{R}) where {R}
+function _fw_neighbors(knn)
     fw_neighbors = [[knn[i][j].idx for j in 1:length(knn[i])]
                         for i in 1:length(knn)]
     return fw_neighbors
@@ -139,11 +137,11 @@ end
 function _init_knn_tree(data::Vector{V},
                         n_neighbors::Int) where {V <: AbstractArray}
     np = length(data)
-    knn_tree = [mutable_binary_maxheap(_NNTuple{Int, eltype(V)}) for _ in 1:np]
-    for p in 1:np
-        k_idxs = sample_neighbors(np, n_neighbors, exclude=[p])
-        for idx in k_idxs
-            push!(knn_tree[p], _NNTuple(idx, Inf))
+    knn_tree = [fill(_NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
+    for i in 1:np
+        k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
+        for j in 1:length(k_idxs)
+            knn_tree[i][j] = _NNTuple(k_idxs[j], Inf)
         end
     end
     return knn_tree
