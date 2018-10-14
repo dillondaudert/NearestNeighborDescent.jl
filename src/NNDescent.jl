@@ -10,8 +10,9 @@ using DataStructures
 import DataStructures: mutable_binary_minheap
 
 include("basic_nndescent.jl")
+include("utils.jl")
 include("brute_knn.jl")
 
-export NNDescentTree, _NNTuple
+export DescentTree, NNTuple
 
 end # module

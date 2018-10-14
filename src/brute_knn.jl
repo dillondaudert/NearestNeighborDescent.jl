@@ -7,11 +7,11 @@ function brute_knn(data::Vector{V},
                    k::Int) where {V <: AbstractArray}
 
     np = length(data)
-    distances = fill(_NNTuple(0, 0.), (np, np))
+    distances = fill(NNTuple(0, 0.), (np, np))
 
     for i = 1:np, j = 1:np
         d = evaluate(metric, data[i], data[j])
-        distances[i, j] = _NNTuple(j, d)
+        distances[i, j] = NNTuple(j, d)
     end
 
     # start at 2 as index 1 is the distance to itself (once sorted)

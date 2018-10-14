@@ -73,11 +73,11 @@ end
 
 @testset "neighbors tests" begin
     # create tree
-    knn_tree = [[_NNTuple(2, Inf), _NNTuple(5, Inf)],
-                [_NNTuple(4, Inf)],
-                [_NNTuple(2, Inf), _NNTuple(4, Inf)],
-                [_NNTuple(1, Inf)],
-                [_NNTuple(3, Inf), _NNTuple(4, Inf)]]
+    knn_tree = [[NNTuple(2, Inf), NNTuple(5, Inf)],
+                [NNTuple(4, Inf)],
+                [NNTuple(2, Inf), NNTuple(4, Inf)],
+                [NNTuple(1, Inf)],
+                [NNTuple(3, Inf), NNTuple(4, Inf)]]
 
     @testset "fw neighbors tests" begin
         fw = _fw_neighbors(knn_tree)
@@ -100,24 +100,24 @@ end
 @testset "_update_nn tests" begin
 
     @testset "no changes tests" begin
-        v_knn = [_NNTuple(1, 10.), _NNTuple(2, 20.), _NNTuple(3, 30.)]
-        @test _update_nn!(v_knn, _NNTuple(4, 40.)) == 0
+        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, 30.)]
+        @test _update_nn!(v_knn, NNTuple(4, 40.)) == 0
         @test length(v_knn) == 3
         @test v_knn[end].idx == 3
         @test v_knn[end].dist == 30.
     end
     @testset "exists tests" begin
-        v_knn = [_NNTuple(1, 10.), _NNTuple(2, 20.), _NNTuple(3, Inf)]
-        @test _update_nn!(v_knn, _NNTuple(3, 5.)) == 1
+        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, Inf)]
+        @test _update_nn!(v_knn, NNTuple(3, 5.)) == 1
         @test v_knn[1].idx == 3
         @test v_knn[1].dist == 5.
         @test v_knn[end].idx == 2
         @test v_knn[end].dist == 20.
-        @test _update_nn!(v_knn, _NNTuple(3, 5.)) == 0
+        @test _update_nn!(v_knn, NNTuple(3, 5.)) == 0
     end
     @testset "new nearest neighbor tests" begin
-        v_knn = [_NNTuple(1, 10.), _NNTuple(2, 20.), _NNTuple(3, 30.)]
-        @test _update_nn!(v_knn, _NNTuple(4, 15.)) == 1
+        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, 30.)]
+        @test _update_nn!(v_knn, NNTuple(4, 15.)) == 1
         @test length(v_knn) == 3
         @test v_knn[2].idx == 4
         @test v_knn[2].dist == 15.

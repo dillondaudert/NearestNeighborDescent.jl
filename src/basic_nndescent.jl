@@ -12,17 +12,18 @@ isless(a::NNTuple, b::NNTuple) = <(a, b)
 
 struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
-    n_neigbhors::K
+    n_neighbors::K
     metric::M
     knn_tree::Vector{MutableBinaryHeap}
 end
 
 """
+    DescentTree(data [,])
 """
-function NNDescentTree(data::Vector{V},
-                       n_neighbors::Int,
-                       metric::M = Euclidean()
-                      ) where {V <: AbstractArray, M <: Metric}
+function DescentTree(data::Vector{V},
+                     n_neighbors::Int,
+                     metric::Metric = Euclidean()
+                    ) where {V <: AbstractArray}
     n_d = length(V)
     np = length(data)
 
