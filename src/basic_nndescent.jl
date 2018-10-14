@@ -2,15 +2,15 @@
 import Random: randperm
 import Base: <, isless
 
-struct _NNTuple{R, S}
+struct NNTuple{R, S}
     idx::R
     dist::S
 end
 
-<(a::_NNTuple, b::_NNTuple) = a.dist < b.dist
-isless(a::_NNTuple, b::_NNTuple) = <(a, b)
+<(a::NNTuple, b::NNTuple) = a.dist < b.dist
+isless(a::NNTuple, b::NNTuple) = <(a, b)
 
-struct NNDescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
+struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
     n_neigbhors::K
     metric::M
@@ -26,7 +26,7 @@ function NNDescentTree(data::Vector{V},
     n_d = length(V)
     np = length(data)
 
-    knn_tree = Vector{MutableBinaryHeap{_NNTuple{Int64,eltype(V)}, DataStructures.GreaterThan}}(undef, np)
+    knn_tree = Vector{MutableBinaryHeap{NNTuple{Int64,eltype(V)}, DataStructures.GreaterThan}}(undef, np)
 
     # build the knn_tree
 
@@ -58,7 +58,7 @@ function _nn_descent(data::Vector{V},
                 if i ≠ u₂
                     d = evaluate(metric, data[i], data[u₂])
                     #print(u₂, " in ", fw[i], " = ", u₂ in fw[i], "\n")
-                    c = c + _update_nn!(knn_tree[i], _NNTuple(u₂, d))
+                    c = c + _update_nn!(knn_tree[i], NNTuple(u₂, d))
                 end
             end
         end
@@ -78,7 +78,7 @@ end
 Update the nearest neighbors of point `v`.
 """
 function _update_nn!(v_knn,
-                     u::_NNTuple{S, T}) where {S, T}
+                     u::NNTuple{S, T}) where {S, T}
 
     exists, updated = false, false
     if u.dist < v_knn[end].dist
@@ -140,25 +140,12 @@ end
 function _init_knn_tree(data::Vector{V},
                         n_neighbors::Int) where {V <: AbstractArray}
     np = length(data)
-    knn_tree = [fill(_NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
+    knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
-            knn_tree[i][j] = _NNTuple(k_idxs[j], Inf)
+            knn_tree[i][j] = NNTuple(k_idxs[j], Inf)
         end
     end
     return knn_tree
-end
-
-"""
-Sample `n_neighbors` elements from a set of ints `1:npoints`.
-The ints in `exclude` won't be sampled.
-"""
-function sample_neighbors(npoints::Int,
-                          n_neighbors::Int,
-                          sample_rate::R = 1.;
-                          exclude::Vector{Int} = Vector{Int}()) where {R <: AbstractFloat}
-    last = min(npoints-length(exclude), trunc(Int, sample_rate*n_neighbors))
-    idxs = setdiff(randperm(npoints), exclude)[1:last]
-    return idxs
 end
