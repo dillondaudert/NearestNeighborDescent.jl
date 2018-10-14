@@ -12,26 +12,20 @@ isless(a::NNTuple, b::NNTuple) = <(a, b)
 
 struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
-    n_neighbors::K
+    nneighbors::K
     metric::M
-    knn_tree::Vector{MutableBinaryHeap}
+    knntree::Matrix{NNTuple{Int,eltype(V)}}
 end
 
 """
-    DescentTree(data [,])
+    DescentTree(data, nneighbors [, metric = Euclidean()]) -> descenttree
 """
 function DescentTree(data::Vector{V},
-                     n_neighbors::Int,
+                     nneighbors::Int,
                      metric::Metric = Euclidean()
-                    ) where {V <: AbstractArray}
-    n_d = length(V)
-    np = length(data)
-
-    knn_tree = Vector{MutableBinaryHeap{NNTuple{Int64,eltype(V)}, DataStructures.GreaterThan}}(undef, np)
-
-    # build the knn_tree
-
-    return NNDescentTree(data, n_neighbors, sample_rate, precision, metric, knn_tree)
+                    ) where {V <: AbstractVector}
+    knntree = _nn_descent(data, metric, nneighbors)
+    DescentTree(data, nneighbors, metric, knntree)
 end
 
 """
