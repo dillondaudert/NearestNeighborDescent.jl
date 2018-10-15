@@ -1,3 +1,16 @@
+import Random: randperm
+import Base: <, isless
+
+mutable struct NNTuple{R, S}
+    idx::R
+    dist::S
+    flag::Bool
+end
+NNTuple(a, b) = NNTuple(a, b, true)
+
+<(a::NNTuple, b::NNTuple) = a.dist < b.dist
+isless(a::NNTuple, b::NNTuple) = <(a, b)
+
 """
 Sample `n_neighbors` elements from a set of ints `1:npoints`.
 The ints in `exclude` won't be sampled.

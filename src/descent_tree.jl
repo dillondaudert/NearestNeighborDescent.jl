@@ -1,16 +1,4 @@
 # A simple NN tree implementation
-import Random: randperm
-import Base: <, isless
-
-mutable struct NNTuple{R, S}
-    idx::R
-    dist::S
-    flag::Bool
-end
-NNTuple(a, b) = NNTuple(a, b, true)
-
-<(a::NNTuple, b::NNTuple) = a.dist < b.dist
-isless(a::NNTuple, b::NNTuple) = <(a, b)
 
 struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
