@@ -47,13 +47,13 @@ function _nn_descent(data::Vector{V},
         bw = _bw_neighbors(knn_tree)
         _neighbors = [union(fw[i], bw[i]) for i in 1:np]
         c = 0
-        # calculate distances to neighbors' neighbors
+        # calculate local join around each point
         for i in 1:np
-            for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[u₁]
-                if i ≠ u₂
-                    d = evaluate(metric, data[i], data[u₂])
-                    #print(u₂, " in ", fw[i], " = ", u₂ in fw[i], "\n")
-                    c = c + _update_nn!(knn_tree[i], NNTuple(u₂, d))
+            for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[i]
+                if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
+                    d = evaluate(metric, data[u₁], data[u₂])
+                    c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
+                    c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
                 end
             end
         end
