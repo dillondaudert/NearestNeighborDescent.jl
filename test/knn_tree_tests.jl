@@ -78,22 +78,36 @@ end
                 [NNTuple(2, Inf), NNTuple(4, Inf)],
                 [NNTuple(1, Inf)],
                 [NNTuple(3, Inf), NNTuple(4, Inf)]]
+    old_fw, fw, old_bw, bw = _neighbors(knn_tree)
 
-    @testset "fw neighbors tests" begin
-        fw = _fw_neighbors(knn_tree)
+    @testset "new fw neighbors tests" begin
         @test fw[1] == [2, 5]
         @test fw[2] == [4]
         @test fw[3] == [2, 4]
         @test fw[4] == [1]
         @test fw[5] == [3, 4]
     end
-    @testset "bw neighbors tests" begin
-        bw = _bw_neighbors(knn_tree)
+    @testset "new bw neighbors tests" begin
         @test bw[1] == [4]
         @test bw[2] == [1, 3]
         @test bw[3] == [5]
         @test bw[4] == [2, 3, 5]
         @test bw[5] == [1]
+    end
+    old_fw, fw, old_bw, bw = _neighbors(knn_tree)
+    @testset "old fw neighbors tests" begin
+        @test old_fw[1] == [2, 5]
+        @test old_fw[2] == [4]
+        @test old_fw[3] == [2, 4]
+        @test old_fw[4] == [1]
+        @test old_fw[5] == [3, 4]
+    end
+    @testset "old bw neighbors tests" begin
+        @test old_bw[1] == [4]
+        @test old_bw[2] == [1, 3]
+        @test old_bw[3] == [5]
+        @test old_bw[4] == [2, 3, 5]
+        @test old_bw[5] == [1]
     end
 end
 

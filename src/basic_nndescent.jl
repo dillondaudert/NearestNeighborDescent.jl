@@ -2,10 +2,12 @@
 import Random: randperm
 import Base: <, isless
 
-struct NNTuple{R, S}
+mutable struct NNTuple{R, S}
     idx::R
     dist::S
+    flag::Bool
 end
+NNTuple(a, b) = NNTuple(a, b, true)
 
 <(a::NNTuple, b::NNTuple) = a.dist < b.dist
 isless(a::NNTuple, b::NNTuple) = <(a, b)
@@ -43,19 +45,31 @@ function _nn_descent(data::Vector{V},
     # until no further updates
     while true
         # get the fw and bw neighbors of each point
-        fw = _fw_neighbors(knn_tree)
-        bw = _bw_neighbors(knn_tree)
-        _neighbors = [union(fw[i], bw[i]) for i in 1:np]
+        old_fw, fw, old_bw, bw = _neighbors(knn_tree)
+        old_neighbors = [union(old_fw[i], old_bw[i]) for i in 1:np]
+        new_neighbors = [union(fw[i], bw[i]) for i in 1:np]
         c = 0
         # calculate local join around each point
         for i in 1:np
-            for u₁ ∈ _neighbors[i], u₂ ∈ _neighbors[i]
-                if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
-                    d = evaluate(metric, data[u₁], data[u₂])
-                    c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
-                    c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+            for u₁ ∈ new_neighbors[i]
+                for u₂ ∈ new_neighbors[i]
+                    # both points are new
+                    if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
+                        d = evaluate(metric, data[u₁], data[u₂])
+                        c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
+                        c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                    end
+                end
+                for u₂ ∈ old_neighbors[i]
+                    # one point is new
+                    if i ≠ u₁ && i ≠ u₂
+                        d = evaluate(metric, data[u₁], data[u₂])
+                        c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
+                        c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                    end
                 end
             end
+
         end
         if c == 0
             break
@@ -108,28 +122,29 @@ function _update_nn!(v_knn,
 end
 
 """
-Get the backward neighbors of each point in a KNN tree, `knn`,
+Get the neighbors of each point in a KNN tree, `knn`,
 as an array of ids.
 """
-function _bw_neighbors(knn)
-    bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
+function _neighbors(knn)
+    old_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
+    new_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
+    old_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
+    new_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     for i in 1:length(knn)
         for j in 1:length(knn[i])
-            # add incoming edge i of jth NN of i with index idx
-            append!(bw_neighbors[knn[i][j].idx], i)
+            # add incoming edge ith -> jth.idx
+            if knn[i][j].flag
+                # denote this neighbor has participated in local join
+                knn[i][j].flag = false
+                append!(new_fw_neighbors[i], knn[i][j].idx)
+                append!(new_bw_neighbors[knn[i][j].idx], i)
+            else
+                append!(old_fw_neighbors[i], knn[i][j].idx)
+                append!(old_bw_neighbors[knn[i][j].idx], i)
+            end
         end
     end
-    return bw_neighbors
-end
-
-"""
-Get the forward neighbors of each point in a KNN tree, `knn`,
-as an array of ids.
-"""
-function _fw_neighbors(knn)
-    fw_neighbors = [[knn[i][j].idx for j in 1:length(knn[i])]
-                        for i in 1:length(knn)]
-    return fw_neighbors
+    return old_fw_neighbors, new_fw_neighbors, old_bw_neighbors, new_bw_neighbors
 end
 
 function _init_knn_tree(data::Vector{V},
