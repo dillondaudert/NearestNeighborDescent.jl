@@ -36,7 +36,8 @@ Return a kNN graph for the input data according to the given metric.
 function _nn_descent(data::Vector{V},
                      metric::Metric,
                      k::Int,
-                    ) where {V <: AbstractArray}
+                     precision::R = 0.001
+                    ) where {V <: AbstractArray, R <: AbstractFloat}
 
     np = length(data)
     # initialize with random neighbors
@@ -71,7 +72,7 @@ function _nn_descent(data::Vector{V},
             end
 
         end
-        if c == 0
+        if c < precision*k*np
             break
         end
     end
