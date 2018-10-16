@@ -79,7 +79,7 @@ function _update_nn!(v_knn,
                      u::NNTuple{S, T}) where {S, T}
 
     exists, updated = false, false
-    if u.dist < v_knn[end].dist
+    if u.dist < top(v_knn).dist
         # this point is closer than the furthest nearest neighbor
         # either this point exists - we update if Inf, otherwise no update
         #   or this point is not already a NN, so we add.
@@ -97,13 +97,12 @@ function _update_nn!(v_knn,
         end
         if !exists
             # u is a new nearest neighbor
-            v_knn[end] = u
+            _, i = top_with_handle(v_knn)
+            v_knn[i] = u
             updated = true
         end
 
         if updated
-            # use insertion sort since the array is mostly sorted (only 1 change)
-            sort!(v_knn, alg=InsertionSort)
             return 1
         end
     end
@@ -139,11 +138,12 @@ end
 function _init_knn_tree(data::Vector{V},
                         n_neighbors::Int) where {V <: AbstractArray}
     np = length(data)
-    knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
+    #knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
+    knn_tree = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
-            knn_tree[i][j] = NNTuple(k_idxs[j], Inf)
+            push!(knn_tree[i], NNTuple(k_idxs[j], Inf))
         end
     end
     return knn_tree

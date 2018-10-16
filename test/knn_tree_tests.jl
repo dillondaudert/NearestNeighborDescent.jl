@@ -73,11 +73,15 @@ end
 
 @testset "neighbors tests" begin
     # create tree
-    knn_tree = [[NNTuple(2, Inf), NNTuple(5, Inf)],
-                [NNTuple(4, Inf)],
-                [NNTuple(2, Inf), NNTuple(4, Inf)],
-                [NNTuple(1, Inf)],
-                [NNTuple(3, Inf), NNTuple(4, Inf)]]
+    knn_tree = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:5]
+    push!(knn_tree[1], NNTuple(2, Inf))
+    push!(knn_tree[1], NNTuple(5, Inf))
+    push!(knn_tree[2], NNTuple(4, Inf))
+    push!(knn_tree[3], NNTuple(2, Inf))
+    push!(knn_tree[3], NNTuple(4, Inf))
+    push!(knn_tree[4], NNTuple(1, Inf))
+    push!(knn_tree[5], NNTuple(3, Inf))
+    push!(knn_tree[5], NNTuple(4, Inf))
     old_fw, fw, old_bw, bw = _neighbors(knn_tree)
 
     @testset "new fw neighbors tests" begin
@@ -114,28 +118,35 @@ end
 @testset "_update_nn tests" begin
 
     @testset "no changes tests" begin
-        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, 30.)]
+        v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+        push!(v_knn, NNTuple(1, 10.))
+        push!(v_knn, NNTuple(2, 20.))
+        push!(v_knn, NNTuple(3, 30.))
         @test _update_nn!(v_knn, NNTuple(4, 40.)) == 0
         @test length(v_knn) == 3
-        @test v_knn[end].idx == 3
-        @test v_knn[end].dist == 30.
+        @test top(v_knn).idx == 3
+        @test top(v_knn).dist == 30.
     end
     @testset "exists tests" begin
-        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, Inf)]
+        v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+        push!(v_knn, NNTuple(1, 10.))
+        push!(v_knn, NNTuple(2, 20.))
+        push!(v_knn, NNTuple(3, Inf))
         @test _update_nn!(v_knn, NNTuple(3, 5.)) == 1
-        @test v_knn[1].idx == 3
-        @test v_knn[1].dist == 5.
-        @test v_knn[end].idx == 2
-        @test v_knn[end].dist == 20.
+        @test v_knn[3].idx == 3
+        @test v_knn[3].dist == 5.
+        @test top(v_knn).idx == 2
+        @test top(v_knn).dist == 20.
         @test _update_nn!(v_knn, NNTuple(3, 5.)) == 0
     end
     @testset "new nearest neighbor tests" begin
-        v_knn = [NNTuple(1, 10.), NNTuple(2, 20.), NNTuple(3, 30.)]
+        v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+        push!(v_knn, NNTuple(1, 10.))
+        push!(v_knn, NNTuple(2, 20.))
+        push!(v_knn, NNTuple(3, 30.))
+        @test top(v_knn).idx == 3
         @test _update_nn!(v_knn, NNTuple(4, 15.)) == 1
         @test length(v_knn) == 3
-        @test v_knn[2].idx == 4
-        @test v_knn[2].dist == 15.
-        @test v_knn[end].idx == 2
-        @test v_knn[1].idx == 1
+        @test top(v_knn).idx == 2
     end
 end
