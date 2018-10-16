@@ -3,8 +3,9 @@ module NNDescent
 using NearestNeighbors
 import NearestNeighbors.NNTree
 
-using Distances
-import Distances: Metric, evaluate
+using Distances: Metric, evaluate
+
+using DataStructures
 
 include("utils.jl")
 include("descent_tree.jl")

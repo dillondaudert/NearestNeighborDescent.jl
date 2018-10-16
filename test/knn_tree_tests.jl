@@ -63,10 +63,10 @@ end
     @test length(knn_tree) == length(data)
     for p in 1:length(knn_tree)
         @test length(knn_tree[p]) == n_neighbors
-        for t in knn_tree[p]
-            @test t.idx ≠ p
-            @test t.idx ≤ length(data)
-            @test t.dist == Inf
+        for t = 1:length(knn_tree[p])
+            @test knn_tree[p][t].idx ≠ p
+            @test knn_tree[p][t].idx ≤ length(data)
+            @test knn_tree[p][t].dist == Inf
         end
     end
 end

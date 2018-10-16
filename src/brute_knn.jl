@@ -9,7 +9,7 @@ function brute_knn(data::Vector{V},
     np = length(data)
     distances = fill(NNTuple(0, 0.), (np, np))
 
-    for i = 1:np, j = 1:np
+    @inbounds for i = 1:np, j = 1:np
         d = evaluate(metric, data[i], data[j])
         distances[i, j] = NNTuple(j, d)
     end

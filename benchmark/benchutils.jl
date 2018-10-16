@@ -10,7 +10,7 @@ function run_benchmarks()
     nn_descent_recall = []
     nn_descent_time = []
     brute_knn_time = []
-    for n in [500, 1000, 2000, 4000, 8000]
+    for n in [500, 1000, 2000, 4000]
         print("Benchmarking n = $n\n")
         k = 20
         data = [rand(20) for _ in 1:n]
