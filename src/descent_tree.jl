@@ -11,11 +11,11 @@ end
     DescentTree(data, nneighbors [, metric = Euclidean()]) -> descenttree
 """
 function DescentTree(data::Vector{V},
-                     nneighbors::Int,
+                     n_neighbors::Int,
                      metric::Metric = Euclidean()
                     ) where {V <: AbstractVector}
-    knntree = _nn_descent(data, metric, nneighbors)
-    DescentTree(data, nneighbors, metric, knntree)
+    knntree = _nn_descent(data, metric, n_neighbors)
+    DescentTree(data, n_neighbors, metric, knntree)
 end
 
 """
@@ -24,7 +24,8 @@ Return a kNN graph for the input data according to the given metric.
 function _nn_descent(data::Vector{V},
                      metric::Metric,
                      k::Int,
-                     precision::R = 0.001
+                     sample_rate::R = 1.,
+                     precision::R = .001
                     ) where {V <: AbstractArray, R <: AbstractFloat}
 
     np = length(data)
@@ -113,7 +114,7 @@ end
 Get the neighbors of each point in a KNN tree, `knn`,
 as an array of ids.
 """
-function _neighbors(knn)
+function _neighbors(knn, sample_rate::AbstractFloat = 1.)
     old_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     new_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     old_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
@@ -122,13 +123,19 @@ function _neighbors(knn)
         for j in 1:length(knn[i])
             # add incoming edge ith -> jth.idx
             if knn[i][j].flag
-                # denote this neighbor has participated in local join
-                knn[i][j].flag = false
-                append!(new_fw_neighbors[i], knn[i][j].idx)
-                append!(new_bw_neighbors[knn[i][j].idx], i)
+                # rejection sample
+                if rand() ≤ sample_rate
+                    # denote this neighbor has participated in local join
+                    knn[i][j].flag = false
+                    append!(new_fw_neighbors[i], knn[i][j].idx)
+                    append!(new_bw_neighbors[knn[i][j].idx], i)
+                end
             else
                 append!(old_fw_neighbors[i], knn[i][j].idx)
-                append!(old_bw_neighbors[knn[i][j].idx], i)
+                # rejection sample
+                if rand() ≤ sample_rate
+                    append!(old_bw_neighbors[knn[i][j].idx], i)
+                end
             end
         end
     end
