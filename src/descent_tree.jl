@@ -31,11 +31,12 @@ function _nn_descent(data::Vector{V},
     np = length(data)
     # initialize with random neighbors
     knn_tree = _init_knn_tree(data, k)
+    comps = 0
 
     # until no further updates
     while true
         # get the fw and bw neighbors of each point
-        old_fw, fw, old_bw, bw = _neighbors(knn_tree)
+        old_fw, fw, old_bw, bw = _neighbors(knn_tree, sample_rate)
         old_neighbors = [union(old_fw[i], old_bw[i]) for i in 1:np]
         new_neighbors = [union(fw[i], bw[i]) for i in 1:np]
         c = 0
@@ -46,6 +47,7 @@ function _nn_descent(data::Vector{V},
                     # both points are new
                     if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
                         d = evaluate(metric, data[u₁], data[u₂])
+                        comps += 1
                         c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
                         c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
                     end
@@ -54,6 +56,7 @@ function _nn_descent(data::Vector{V},
                     # one point is new
                     if i ≠ u₁ && i ≠ u₂
                         d = evaluate(metric, data[u₁], data[u₂])
+                        comps += 1
                         c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
                         c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
                     end
@@ -70,6 +73,8 @@ function _nn_descent(data::Vector{V},
         knn_ids[i, j] = pop!(knn_tree[i]).idx
     end
 
+    cost = 2. * comps / (np*(np-1))
+    print("\tcomps cost: $cost\n")
     return knn_ids
 end
 
@@ -119,23 +124,18 @@ function _neighbors(knn, sample_rate::AbstractFloat = 1.)
     new_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     old_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     new_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
-    for i in 1:length(knn)
-        for j in 1:length(knn[i])
-            # add incoming edge ith -> jth.idx
-            if knn[i][j].flag
-                # rejection sample
-                if rand() ≤ sample_rate
-                    # denote this neighbor has participated in local join
-                    knn[i][j].flag = false
-                    append!(new_fw_neighbors[i], knn[i][j].idx)
-                    append!(new_bw_neighbors[knn[i][j].idx], i)
-                end
-            else
-                append!(old_fw_neighbors[i], knn[i][j].idx)
-                # rejection sample
-                if rand() ≤ sample_rate
-                    append!(old_bw_neighbors[knn[i][j].idx], i)
-                end
+    for i in 1:length(knn), j in 1:length(knn[i])
+        # add incoming edge ith -> jth.idx
+        if knn[i][j].flag && rand() ≤ sample_rate
+            # denote this neighbor has participated in local join
+            knn[i][j].flag = false
+            append!(new_fw_neighbors[i], knn[i][j].idx)
+            append!(new_bw_neighbors[knn[i][j].idx], i)
+        else
+            append!(old_fw_neighbors[i], knn[i][j].idx)
+            # rejection sample
+            if rand() ≤ sample_rate
+                append!(old_bw_neighbors[knn[i][j].idx], i)
             end
         end
     end
