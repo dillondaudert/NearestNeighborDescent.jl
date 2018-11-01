@@ -126,15 +126,14 @@ function _neighbors(knn, sample_rate::AbstractFloat = 1.)
     new_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
     for i in 1:length(knn), j in 1:length(knn[i])
         # add incoming edge ith -> jth.idx
-        if knn[i][j].flag && rand() ≤ sample_rate
-            # denote this neighbor has participated in local join
-            knn[i][j].flag = false
-            append!(new_fw_neighbors[i], knn[i][j].idx)
-            append!(new_bw_neighbors[knn[i][j].idx], i)
-        else
-            append!(old_fw_neighbors[i], knn[i][j].idx)
-            # rejection sample
-            if rand() ≤ sample_rate
+        if rand() ≤ sample_rate
+            if knn[i][j].flag
+                # denote this neighbor has participated in local join
+                knn[i][j].flag = false
+                append!(new_fw_neighbors[i], knn[i][j].idx)
+                append!(new_bw_neighbors[knn[i][j].idx], i)
+            else
+                append!(old_fw_neighbors[i], knn[i][j].idx)
                 append!(old_bw_neighbors[knn[i][j].idx], i)
             end
         end
