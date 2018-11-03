@@ -141,6 +141,29 @@ function _neighbors(knn, sample_rate::AbstractFloat = 1.)
     return old_fw_neighbors, new_fw_neighbors, old_bw_neighbors, new_bw_neighbors
 end
 
+"""
+    search(tree::DescentTree, queries::Vector{V}, n_neighbors::Int, queue_size::Int)
+
+Search the kNN `tree` for the nearest neighbors of the points in `queries`.
+`queue_size` controls how large the neighbor queue should be. Larger values
+increase accuracy at the cost of speed, default=1
+"""
+function search(tree::DescentTree,
+                queries::Vector{V},
+                n_neighbors::Int,
+                queue_size::Int = 1,
+                ) where {V <: AbstractArray}
+
+    for i in eachindex(queries)
+        # maintain a queue P of nearest neighbors
+        # while some neighbor v in P not expanded
+        #    expand neighbors of v (calc dist)
+
+        # top n_neighbors expanded => these are the approx. kNN
+    end
+
+end
+
 function _init_knn_tree(data::Vector{V},
                         n_neighbors::Int) where {V <: AbstractArray}
     np = length(data)
