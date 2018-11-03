@@ -19,6 +19,25 @@ function DescentTree(data::Vector{V},
 end
 
 """
+    knn(tree::DescentTree) -> ids, dists
+
+Return the prebuilt kNN as a tuple `(ids, dists)` where `ids` is an `KxN` matrix
+of integer indices and `dists` is an `KxN` matrix of distances.
+"""
+function knn(tree::DescentTree)
+    np, k = length(tree.graph), tree.nneighbors
+    ids = Array{Int}(undef, (k, np))
+    dists = Array{Float64}(undef, (k, np))
+
+    for i = 1:np
+        for j in 1:k
+            ids[j, i] = tree[i][j].idx
+            dists[j, i] = tree[i][j].dist
+        end
+    end
+end
+
+"""
 Return a kNN graph for the input data according to the given metric.
 """
 function build_graph(data::Vector{V},
