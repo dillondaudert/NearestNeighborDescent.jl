@@ -54,35 +54,35 @@
     end
 end
 
-@testset "_init_knn_tree tests" begin
+@testset "make_knn_heaps tests" begin
     data = Vector([rand(3) for _ in 1:10])
     n_neighbors = 3
 
-    knn_tree = NNDescent._init_knn_tree(data, n_neighbors)
+    knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
 
-    @test length(knn_tree) == length(data)
-    for p in 1:length(knn_tree)
-        @test length(knn_tree[p]) == n_neighbors
-        for t = 1:length(knn_tree[p])
-            @test knn_tree[p][t].idx ≠ p
-            @test knn_tree[p][t].idx ≤ length(data)
-            @test knn_tree[p][t].dist == Inf
+    @test length(knn_heaps) == length(data)
+    for p in 1:length(knn_heaps)
+        @test length(knn_heaps[p]) == n_neighbors
+        for t = 1:length(knn_heaps[p])
+            @test knn_heaps[p][t].idx ≠ p
+            @test knn_heaps[p][t].idx ≤ length(data)
+            @test knn_heaps[p][t].dist == Inf
         end
     end
 end
 
 @testset "neighbors tests" begin
     # create tree
-    knn_tree = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:5]
-    push!(knn_tree[1], NNTuple(2, Inf))
-    push!(knn_tree[1], NNTuple(5, Inf))
-    push!(knn_tree[2], NNTuple(4, Inf))
-    push!(knn_tree[3], NNTuple(2, Inf))
-    push!(knn_tree[3], NNTuple(4, Inf))
-    push!(knn_tree[4], NNTuple(1, Inf))
-    push!(knn_tree[5], NNTuple(3, Inf))
-    push!(knn_tree[5], NNTuple(4, Inf))
-    old_fw, fw, old_bw, bw = _neighbors(knn_tree)
+    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:5]
+    push!(knn_heaps[1], NNTuple(2, Inf))
+    push!(knn_heaps[1], NNTuple(5, Inf))
+    push!(knn_heaps[2], NNTuple(4, Inf))
+    push!(knn_heaps[3], NNTuple(2, Inf))
+    push!(knn_heaps[3], NNTuple(4, Inf))
+    push!(knn_heaps[4], NNTuple(1, Inf))
+    push!(knn_heaps[5], NNTuple(3, Inf))
+    push!(knn_heaps[5], NNTuple(4, Inf))
+    old_fw, fw, old_bw, bw = _neighbors(knn_heaps)
 
     @testset "new fw neighbors tests" begin
         @test fw[1] == [2, 5]
@@ -98,7 +98,7 @@ end
         @test bw[4] == [2, 3, 5]
         @test bw[5] == [1]
     end
-    old_fw, fw, old_bw, bw = _neighbors(knn_tree)
+    old_fw, fw, old_bw, bw = _neighbors(knn_heaps)
     @testset "old fw neighbors tests" begin
         @test old_fw[1] == [2, 5]
         @test old_fw[2] == [4]

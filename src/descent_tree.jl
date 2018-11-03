@@ -30,12 +30,12 @@ function _nn_descent(data::Vector{V},
 
     np = length(data)
     # initialize with random neighbors
-    knn_tree = _init_knn_tree(data, k)
+    knn_heaps = make_knn_heaps(data, k)
 
     # until no further updates
     while true
         # get the fw and bw neighbors of each point
-        old_fw, fw, old_bw, bw = _neighbors(knn_tree, sample_rate)
+        old_fw, fw, old_bw, bw = _neighbors(knn_heaps, sample_rate)
         old_neighbors = [union(old_fw[i], old_bw[i]) for i in 1:np]
         new_neighbors = [union(fw[i], bw[i]) for i in 1:np]
         c = 0
@@ -46,16 +46,16 @@ function _nn_descent(data::Vector{V},
                     # both points are new
                     if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        c += _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
-                        c += _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                        c += _update_nn!(knn_heaps[u₁], NNTuple(u₂, d))
+                        c += _update_nn!(knn_heaps[u₂], NNTuple(u₁, d))
                     end
                 end
                 for u₂ ∈ old_neighbors[i]
                     # one point is new
                     if i ≠ u₁ && i ≠ u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        c += _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
-                        c += _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                        c += _update_nn!(knn_heaps[u₁], NNTuple(u₂, d))
+                        c += _update_nn!(knn_heaps[u₂], NNTuple(u₁, d))
                     end
                 end
             end
@@ -67,7 +67,7 @@ function _nn_descent(data::Vector{V},
     end
     knn_ids = zeros(Int, (np, k))
     for i = 1:np, j = 1:k
-        knn_ids[i, j] = pop!(knn_tree[i]).idx
+        knn_ids[i, j] = pop!(knn_heaps[i]).idx
     end
 
     return knn_ids
@@ -156,19 +156,5 @@ function search(tree::DescentTree,
 
         # top n_neighbors expanded => these are the approx. kNN
     end
-
-end
-
-function _init_knn_tree(data::Vector{V},
-                        n_neighbors::Int) where {V <: AbstractArray}
-    np = length(data)
-    #knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
-    knn_tree = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:np]
-    for i in 1:np
-        k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
-        for j in 1:length(k_idxs)
-            push!(knn_tree[i], NNTuple(k_idxs[j], Inf))
-        end
-    end
-    return knn_tree
+    nothing
 end

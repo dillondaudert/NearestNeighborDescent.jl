@@ -24,3 +24,17 @@ function sample_neighbors(npoints::Int,
     idx_gen = Iterators.take((i for i ∈ randperm(npoints) if i ∉ exclude), last)
     return collect(idx_gen)
 end
+
+function make_knn_heaps(data::Vector{V},
+                        n_neighbors::Int) where {V <: AbstractArray}
+    np = length(data)
+    #knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
+    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:np]
+    for i in 1:np
+        k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
+        for j in 1:length(k_idxs)
+            push!(knn_heaps[i], NNTuple(k_idxs[j], Inf))
+        end
+    end
+    return knn_heaps
+end
