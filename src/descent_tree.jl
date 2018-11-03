@@ -40,8 +40,8 @@ function knn(tree::DescentTree)
 
     for i = 1:np
         for j in 1:k
-            ids[j, i] = tree[i][j].idx
-            dists[j, i] = tree[i][j].dist
+            ids[j, i] = tree.graph[i][j].idx
+            dists[j, i] = tree.graph[i][j].dist
         end
     end
 end
