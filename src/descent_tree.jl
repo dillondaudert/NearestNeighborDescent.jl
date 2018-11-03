@@ -1,10 +1,19 @@
 # A simple NN tree implementation
 
-struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
+struct DescentTree{V <: AbstractVector,K,M,S <: AbstractVector} <: NNTree{V,M}
     data::Vector{V}
     nneighbors::K
     metric::M
-    graph::Vector{Vector{NNTuple{Int,eltype(V)}}}
+    graph::Vector{S}
+    function DescentTree(data::Vector{V},
+                         nneighbors::K,
+                         metric::M,
+                         graph::Vector{S}) where {V <: AbstractVector,
+                                                  K <: Integer,
+                                                  M <: Metric,
+                                                  S <: AbstractVector}
+        new{V, K, M, S}(data, nneighbors, metric, graph)
+    end
 end
 
 """
