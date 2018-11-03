@@ -22,7 +22,9 @@ using Distances: Euclidean
         @test _3nn == true_3nn
     end
     @testset "basic_nndescent tests" begin
-        descent_3nn = _nn_descent(data, Euclidean(), 3)
+        tree = DescentTree(data, 3)
+        ids, dists = knn(tree)
+        descent_3nn = transpose(ids)
         @test sort(descent_3nn, dims=2) == sort(true_3nn, dims=2)
     end
 end
