@@ -4,7 +4,7 @@ struct DescentTree{V <: AbstractVector,K,M <: Metric} <: NNTree{V,M}
     data::Vector{V}
     nneighbors::K
     metric::M
-    knntree::Matrix{NNTuple{Int,eltype(V)}}
+    graph::Vector{Vector{NNTuple{Int,eltype(V)}}}
 end
 
 """
@@ -14,14 +14,14 @@ function DescentTree(data::Vector{V},
                      n_neighbors::Int,
                      metric::Metric = Euclidean()
                     ) where {V <: AbstractVector}
-    knntree = _nn_descent(data, metric, n_neighbors)
-    DescentTree(data, n_neighbors, metric, knntree)
+    graph = build_graph(data, metric, n_neighbors)
+    DescentTree(data, n_neighbors, metric, graph)
 end
 
 """
 Return a kNN graph for the input data according to the given metric.
 """
-function _nn_descent(data::Vector{V},
+function build_graph(data::Vector{V},
                      metric::Metric,
                      k::Int,
                      sample_rate::R = 1.,
@@ -65,12 +65,9 @@ function _nn_descent(data::Vector{V},
             break
         end
     end
-    knn_ids = zeros(Int, (np, k))
-    for i = 1:np, j = 1:k
-        knn_ids[i, j] = pop!(knn_heaps[i]).idx
-    end
+    knn_graph = [knn_heaps[i].valtree for i in eachindex(knn_heaps)]
 
-    return knn_ids
+    return knn_graph
 end
 
 """
@@ -111,25 +108,25 @@ function _update_nn!(v_knn,
 end
 
 """
-Get the neighbors of each point in a KNN tree, `knn`,
+Get the neighbors of each point in a KNN graph, `graph`,
 as an array of ids.
 """
-function _neighbors(knn, sample_rate::AbstractFloat = 1.)
-    old_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
-    new_fw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
-    old_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
-    new_bw_neighbors = [Vector{Int}() for _ in 1:length(knn)]
-    for i in 1:length(knn), j in 1:length(knn[i])
+function _neighbors(graph, sample_rate::AbstractFloat = 1.)
+    old_fw_neighbors = [Vector{Int}() for _ in 1:length(graph)]
+    new_fw_neighbors = [Vector{Int}() for _ in 1:length(graph)]
+    old_bw_neighbors = [Vector{Int}() for _ in 1:length(graph)]
+    new_bw_neighbors = [Vector{Int}() for _ in 1:length(graph)]
+    for i in 1:length(graph), j in 1:length(graph[i])
         # add incoming edge ith -> jth.idx
         if rand() ≤ sample_rate
-            if knn[i][j].flag
+            if graph[i][j].flag
                 # denote this neighbor has participated in local join
-                knn[i][j].flag = false
-                append!(new_fw_neighbors[i], knn[i][j].idx)
-                append!(new_bw_neighbors[knn[i][j].idx], i)
+                graph[i][j].flag = false
+                append!(new_fw_neighbors[i], graph[i][j].idx)
+                append!(new_bw_neighbors[graph[i][j].idx], i)
             else
-                append!(old_fw_neighbors[i], knn[i][j].idx)
-                append!(old_bw_neighbors[knn[i][j].idx], i)
+                append!(old_fw_neighbors[i], graph[i][j].idx)
+                append!(old_bw_neighbors[graph[i][j].idx], i)
             end
         end
     end
