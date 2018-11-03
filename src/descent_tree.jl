@@ -44,6 +44,7 @@ function knn(tree::DescentTree)
             dists[j, i] = tree.graph[i][j].dist
         end
     end
+    return ids, dists
 end
 
 """
