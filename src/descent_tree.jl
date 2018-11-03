@@ -31,7 +31,6 @@ function _nn_descent(data::Vector{V},
     np = length(data)
     # initialize with random neighbors
     knn_tree = _init_knn_tree(data, k)
-    comps = 0
 
     # until no further updates
     while true
@@ -47,18 +46,16 @@ function _nn_descent(data::Vector{V},
                     # both points are new
                     if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        comps += 1
-                        c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
-                        c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                        c += _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
+                        c += _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
                     end
                 end
                 for u₂ ∈ old_neighbors[i]
                     # one point is new
                     if i ≠ u₁ && i ≠ u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        comps += 1
-                        c = c + _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
-                        c = c + _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
+                        c += _update_nn!(knn_tree[u₁], NNTuple(u₂, d))
+                        c += _update_nn!(knn_tree[u₂], NNTuple(u₁, d))
                     end
                 end
             end
@@ -73,8 +70,6 @@ function _nn_descent(data::Vector{V},
         knn_ids[i, j] = pop!(knn_tree[i]).idx
     end
 
-    cost = 2. * comps / (np*(np-1))
-    print("\tcomps cost: $cost\n")
     return knn_ids
 end
 
