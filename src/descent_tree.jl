@@ -93,7 +93,7 @@ function build_graph(data::Vector{V},
             break
         end
     end
-    knn_graph = [knn_heaps[i].valtree for i in eachindex(knn_heaps)]
+    knn_graph = [[pop!(knn_heaps[i]) for _ in eachindex(knn_heaps[i])][end-(k-1):end] for i in eachindex(knn_heaps)]
 
     return knn_graph
 end
