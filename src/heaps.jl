@@ -14,9 +14,9 @@ end
 function trickledown!(A::AbstractVector, i::Integer)
 
     if level(i) % 2 == 0
-        trickledown(A, i, Forward)
+        trickledown!(A, i, Forward)
     else
-        trickledown(A, i, Reverse)
+        trickledown!(A, i, Reverse)
     end
 
 end
@@ -40,7 +40,7 @@ function trickledown!(A::AbstractVector, i::Integer, o::Ordering, x=A[i])
                     A[m] = A[hparent(m)]
                     A[hparent(m)] = t
                 end
-                trickledown(A, m, o)
+                trickledown!(A, m, o)
             end
         else
             if lt(o, A[m], A[i])
