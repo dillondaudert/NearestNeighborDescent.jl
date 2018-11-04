@@ -6,6 +6,7 @@ function minmax_heapify!(A::AbstractVector)
     for i = length(A):-1:1
         trickledown!(A, i)
     end
+    A
 end
 
 """
@@ -49,6 +50,7 @@ function trickledown!(A::AbstractVector, i::Integer, o::Ordering, x=A[i])
             end
         end
     end
+    nothing
 end
 
 # utilities
@@ -62,9 +64,9 @@ end
 Return the indices of all children and grandchildren of
 position `i`.
 """
-function descendants(N, i)
+function descendants(N::T, i::T) where {T}
     children = [lchild(i), rchild(i)]
-    grandchildren = []
+    grandchildren = T[]
     for child in children
         append!(grandchildren, [lchild(child), rchild(child)])
     end
