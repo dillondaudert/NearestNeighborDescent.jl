@@ -11,7 +11,9 @@
 
     @testset "minmax_heapify tests" begin
         for i = 1:20
-            @test is_minmax_heap(minmax_heapify!(rand(50)))
+            A = rand(50)
+            minmax_heapify!(A)
+            @test is_minmax_heap(A)
         end
     end
 
