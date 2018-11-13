@@ -119,8 +119,8 @@ function _update_nn!(v_knn,
                 if v_knn[i].dist == Inf
                     v_knn[i] = u
                     updated = true
-                    break
                 end
+                break
             end
         end
         if !exists
