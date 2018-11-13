@@ -167,7 +167,7 @@ end
     search(tree::DescentTree, queries::Vector{V}, n_neighbors::Int, queue_size::Int)
 
 Search the kNN `tree` for the nearest neighbors of the points in `queries`.
-`queue_size` controls how large the neighbor queue should be. Larger values
+`queue_size` controls how large the candidate queue should be. Larger values
 increase accuracy at the cost of speed, default=1
 """
 function search(tree::DescentTree,
@@ -176,12 +176,29 @@ function search(tree::DescentTree,
                 queue_size::Int = 1,
                 ) where {V <: AbstractArray}
 
+    candidates = [binary_maxheap(NNTuple{Int, Float64}) for _ in eachindex(queries)]
     for i in eachindex(queries)
-        # maintain a queue P of nearest neighbors
-        # while some neighbor v in P not expanded
-        #    expand neighbors of v (calc dist)
+        # init
+        j =  rand(1:length(tree.data))
+        d = evaluate(tree.metric, queries[i], tree.data[j])
+        push!(candidates[i], NNTuple(j, d))
 
-        # top n_neighbors expanded => these are the approx. kNN
+        while true
+            unexp = unexpanded(candidates[i])
+            if length(unexp) == 0
+                break
+            end
+            # expand closest unexpanded neighbor
+            #unexp[1].idx is idx in data of candidate neighbor to queries[i]
+            # tree.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
+            for t in tree.graph[unexp[1].idx]
+                d = evaluate(tree.metric, queries[i], tree.data[t.idx])
+                heappush!(candidates[i], NNTuple(t.idx, d))
+            end
+
+        end
     end
-    nothing
+    return candidates
 end
+
+@inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
