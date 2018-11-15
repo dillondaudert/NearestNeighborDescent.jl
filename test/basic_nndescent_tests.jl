@@ -56,8 +56,8 @@ end
         @test heappush!(h, NNTuple(2, 2.), 1) == 0
         # length == max BUT closer, push
         @test heappush!(h, NNTuple(3, .5), 1) == 1
-        @test top(h).idx == 1
-        @test top(h).dist == 1.
+        @test top(h).idx == 3
+        @test top(h).dist == .5
         @test length(h) == 1
         # length < max AND further, push
         @test heappush!(h, NNTuple(4, 4.), 2) == 1
