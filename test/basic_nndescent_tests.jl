@@ -31,7 +31,7 @@ end
 
 @testset "heappush! tests" begin
     @testset "max_cand tests" begin
-        h = BinaryHeap(NNTuple{Int, Float64})
+        h = binary_maxheap(NNTuple{Int, Float64})
         t = NNTuple(1, 1.)
         heappush!(h, t, 0)
         @test length(h) == 0
@@ -47,7 +47,7 @@ end
     end
 
     @testset "return val tests" begin
-        h = BinaryHeap(NNTuple{Int, Float64})
+        h = binary_maxheap(NNTuple{Int, Float64})
         # max_cand
         @test heappush!(h, NNTuple(1, rand()), 0) == 0
         # empty heap push
