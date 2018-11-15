@@ -29,6 +29,46 @@ using Distances: Euclidean
     end
 end
 
+@testset "heappush! tests" begin
+    @testset "max_cand tests" begin
+        h = BinaryHeap(NNTuple{Int, Float64})
+        t = NNTuple(1, 1.)
+        heappush!(h, t, 0)
+        @test length(h) == 0
+
+        heappush!(h, t, 1)
+        @test length(h) == 1
+        @test top(h) == t
+
+        d = NNTuple(2, .5)
+        heappush!(h, d, 1)
+        @test length(h) == 1
+        @test top(h) == d
+    end
+
+    @testset "return val tests" begin
+        h = BinaryHeap(NNTuple{Int, Float64})
+        # max_cand
+        @test heappush!(h, NNTuple(1, rand()), 0) == 0
+        # empty heap push
+        @test heappush!(h, NNTuple(1, 1.), 1) == 1
+        # length == max AND further away, no push
+        @test heappush!(h, NNTuple(2, 2.), 1) == 0
+        # length == max BUT closer, push
+        @test heappush!(h, NNTuple(3, .5), 1) == 1
+        @test top(h).idx == 1
+        @test top(h).dist == 1.
+        @test length(h) == 1
+        # length < max AND further, push
+        @test heappush!(h, NNTuple(4, 4.), 2) == 1
+        @test top(h).idx == 4
+        @test top(h).dist == 4.
+        # tuple already in heap, no push
+        @test heappush!(h, NNTuple(3, .5), 3) == 0
+        @test length(h) == 2
+    end
+end
+
 @testset "search tests" begin
     data = [[0., 0., 0.],
             [0., 0., 1.],
@@ -45,5 +85,4 @@ end
     cands = search(tree, queries, 2, 4)
     @test sort(cands[1].valtree)[1].idx == 1
     @test sort(cands[2].valtree)[1].idx == 3
-
 end
