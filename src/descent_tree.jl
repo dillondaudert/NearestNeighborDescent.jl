@@ -164,16 +164,16 @@ function _neighbors(graph, sample_rate::AbstractFloat = 1.)
 end
 
 """
-    search(tree::DescentTree, queries::Vector{V}, n_neighbors::Int, queue_size::Int)
+    search(tree::DescentTree, queries::Vector{V}, n_neighbors, queue_size) -> indices, distances
 
 Search the kNN `tree` for the nearest neighbors of the points in `queries`.
-`queue_size` controls how large the candidate queue should be. Larger values
-increase accuracy at the cost of speed, default=1
+`queue_size` controls how large the candidate queue should be as a multiple of
+`n_neighbors`. Larger values increase accuracy at the cost of speed, default=1.
 """
 function search(tree::DescentTree,
                 queries::Vector{V},
-                n_neighbors::Int,
-                queue_size::Int = 1,
+                n_neighbors::Integer,
+                queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
 
     candidates = fill(binary_maxheap(NNTuple{Int, Float64}), length(queries))
@@ -202,3 +202,5 @@ function search(tree::DescentTree,
 end
 
 @inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
+
+function heappush!(heap, tup::NNTuple) end
