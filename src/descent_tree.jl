@@ -181,7 +181,7 @@ function search(tree::DescentTree,
         # init
         j =  rand(1:length(tree.data))
         d = evaluate(tree.metric, queries[i], tree.data[j])
-        heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
+        _heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
 
         while true
             unexp = unexpanded(candidates[i])
@@ -194,7 +194,7 @@ function search(tree::DescentTree,
             # tree.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
             for t in tree.graph[unexp[1].idx]
                 d = evaluate(tree.metric, queries[i], tree.data[t.idx])
-                heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
+                _heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
             end
 
         end
@@ -205,15 +205,15 @@ end
 @inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
 
 """
-    heappush!(heap::BinaryHeap, tup::NNTuple, max_candidates)
+    _heappush!(heap::BinaryHeap, tup::NNTuple, max_candidates)
 
 Try to push a neighbor `tup` to `heap`. This will fail (return `0`) if `tup` is
 already in `heap`, if `tup.dist > top(heap).dist`. Otherwise return `1`.
 If `length(heap) > max_candidates` after pushing, `pop` the largest candidate.
 """
-function heappush!(heap::BinaryHeap{NNTuple{S, T}},
-                   tup::NNTuple{S, T},
-                   max_candidates::Int) where {S, T}
+function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
+                    tup::NNTuple{S, T},
+                    max_candidates::Int) where {S, T}
 
     if max_candidates == 0
         @debug "max_candidates has a size of 0"
