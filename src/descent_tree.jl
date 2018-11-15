@@ -106,7 +106,6 @@ Update the nearest neighbors of point `v`.
 function _update_nn!(v_knn,
                      u::NNTuple{S, T}) where {S, T}
 
-    exists, updated = false, false
     if u.dist < top(v_knn).dist
         # this point is closer than the furthest nearest neighbor
         # either this point exists - we update if Inf, otherwise no update
@@ -115,24 +114,19 @@ function _update_nn!(v_knn,
         # check if point in kNN and update if distance is Inf
         for i in 1:length(v_knn)
             if v_knn[i].idx == u.idx
-                exists = true
+                # update distance
                 if v_knn[i].dist == Inf
                     v_knn[i] = u
-                    updated = true
+                    return 1
                 end
-                break
+                # no update
+                return 0
             end
         end
-        if !exists
-            # u is a new nearest neighbor
-            _, i = top_with_handle(v_knn)
-            v_knn[i] = u
-            updated = true
-        end
-
-        if updated
-            return 1
-        end
+        # u is a new nearest neighbor
+        _, i = top_with_handle(v_knn)
+        v_knn[i] = u
+        return 1
     end
     return 0
 end

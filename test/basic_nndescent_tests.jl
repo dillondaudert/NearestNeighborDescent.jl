@@ -66,6 +66,8 @@ end
         # tuple already in heap, no push
         @test _heappush!(h, NNTuple(3, .5), 3) == 0
         @test length(h) == 2
+        @test top(h).idx == 4
+        @test top(h).dist == 4.
     end
 end
 
