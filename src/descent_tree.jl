@@ -176,7 +176,7 @@ function search(tree::DescentTree,
                 queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
     max_candidates = trunc(Int, n_neighbors*queue_size)
-    candidates = fill(binary_maxheap(NNTuple{Int, Float64}), length(queries))
+    candidates = [binary_maxheap(NNTuple{Int, Float64}) for _ in 1:length(queries)]
     for i in eachindex(queries)
         # init
         j =  rand(1:length(tree.data))
