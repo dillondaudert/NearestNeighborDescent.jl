@@ -1,6 +1,6 @@
 # tests
 using NNDescent
-using NNDescent: NNTuple, _neighbors, brute_knn, _update_nn!, DescentTree, knn
+using NNDescent: NNTuple, _neighbors, brute_knn, _update_nn!
 using DataStructures
 using Test
 

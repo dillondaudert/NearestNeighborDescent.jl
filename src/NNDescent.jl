@@ -12,6 +12,6 @@ include("utils.jl")
 include("descent_tree.jl")
 include("brute_knn.jl")
 
-export DescentTree, is_minmax_heap, minmax_heapify!
+export DescentTree, knn, search, is_minmax_heap, minmax_heapify!
 
 end # module
