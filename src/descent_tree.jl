@@ -106,6 +106,7 @@ Update the nearest neighbors of point `v`.
 function _update_nn!(v_knn,
                      u::NNTuple{S, T}) where {S, T}
 
+    return _heappush!(v_knn, u, length(v_knn))
     if u.dist < top(v_knn).dist
         # this point is closer than the furthest nearest neighbor
         # either this point exists - we update if Inf, otherwise no update
@@ -201,9 +202,9 @@ Try to push a neighbor `tup` to `heap`. This will fail (return `0`) if `tup` is
 already in `heap`, if `tup.dist > top(heap).dist`. Otherwise return `1`.
 If `length(heap) > max_candidates` after pushing, `pop` the largest candidate.
 """
-function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
-                    tup::NNTuple{S, T},
-                    max_candidates::Int) where {S, T}
+function _heappush!(heap::AbstractHeap,
+                    tup::NNTuple,
+                    max_candidates::Int)
 
     if max_candidates == 0
         @debug "max_candidates has a size of 0"
