@@ -43,7 +43,6 @@ end
 
     tree = DescentTree(data, 3)
     cands = search(tree, queries, 2, 4)
-    @show cands
     @test sort(cands[1].valtree)[1].idx == 1
     @test sort(cands[2].valtree)[1].idx == 3
 
