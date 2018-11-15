@@ -218,7 +218,7 @@ function heappush!(heap::BinaryHeap{NNTuple{S, T}},
     if length(heap) == 0 && max_candidates > 0
         push!(tup)
         return 1
-    else if tup < top(heap)
+    elseif tup < top(heap)
         # check if already in heap
         for i in eachindex(heap.valtree)
             if heap.valtree[i].idx == tup.idx
