@@ -10,3 +10,4 @@ script:
   - julia -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
 
 codecov: true
+coveralls: true
