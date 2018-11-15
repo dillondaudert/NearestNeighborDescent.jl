@@ -113,15 +113,21 @@ function _update_nn!(v_knn,
 
         # check if point in kNN and update if distance is Inf
         for i in 1:length(v_knn)
-            if v_knn[i].idx == u.idx
-                # update distance
-                if v_knn[i].dist == Inf
-                    v_knn[i] = u
-                    return 1
-                end
-                # no update
+            exists, updated = _check_tuple(v_knn, i, u)
+            if updated
+                return 1
+            elseif exists
                 return 0
             end
+            #if v_knn[i].idx == u.idx
+                # update distance
+            #    if v_knn[i].dist == Inf
+        #            v_knn[i] = u
+            #        return 1
+            #    end
+            #    # no update
+            #    return 0
+            #end
         end
         # u is a new nearest neighbor
         _, i = top_with_handle(v_knn)
@@ -218,8 +224,14 @@ function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
         return 1
     elseif length(heap) < max_candidates || tup < top(heap)
         # check if already in heap
-        for i in eachindex(heap.valtree)
-            if heap.valtree[i].idx == tup.idx
+        for i in 1:length(heap.valtree)
+            #if heap.valtree[i].idx == tup.idx
+            #    return 0
+            #end
+            exists, updated = _check_tuple(heap, i, tup)
+            if updated
+                return 1
+            elseif exists
                 return 0
             end
         end
@@ -231,4 +243,28 @@ function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
         return 1
     end
     return 0
+end
+
+"""
+Check if a tuple exists in a heap at index `i`, and optionally update its dist.
+Returns (exists::Bool, updated::Bool)
+"""
+function _check_tuple() end
+
+@inline function _check_tuple(h::MutableBinaryHeap, i, t)
+    if h[i].idx == t.idx
+        if h[i].dist == Inf
+            h[i] = t
+            return true, true
+        end
+        return true, false
+    end
+    return false, false
+end
+
+@inline function _check_tuple(h::BinaryHeap, i, t)
+    if h.valtree[i].idx == t.idx
+        return true, false
+    end
+    return false, false
 end
