@@ -119,19 +119,9 @@ function _update_nn!(v_knn,
             elseif exists
                 return 0
             end
-            #if v_knn[i].idx == u.idx
-                # update distance
-            #    if v_knn[i].dist == Inf
-        #            v_knn[i] = u
-            #        return 1
-            #    end
-            #    # no update
-            #    return 0
-            #end
         end
         # u is a new nearest neighbor
-        _, i = top_with_handle(v_knn)
-        v_knn[i] = u
+        _push_or_update!(v_knn, u, length(v_knn))
         return 1
     end
     return 0
@@ -225,9 +215,6 @@ function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
     elseif length(heap) < max_candidates || tup < top(heap)
         # check if already in heap
         for i in 1:length(heap.valtree)
-            #if heap.valtree[i].idx == tup.idx
-            #    return 0
-            #end
             exists, updated = _check_tuple(heap, i, tup)
             if updated
                 return 1
@@ -236,13 +223,23 @@ function _heappush!(heap::BinaryHeap{NNTuple{S, T}},
             end
         end
         # push and maintain size
-        push!(heap, tup)
-        if length(heap) > max_candidates
-            pop!(heap)
-        end
+        _push_or_update!(heap, tup, max_candidates)
         return 1
     end
     return 0
+end
+
+@inline function _push_or_update!(h::MutableBinaryHeap, t, maxc)
+    _, i = top_with_handle(h)
+    h[i] = t
+    nothing
+end
+@inline function _push_or_update!(h::BinaryHeap, t, maxc)
+    push!(h, t)
+    if length(h) > maxc
+        pop!(h)
+    end
+    nothing
 end
 
 """
