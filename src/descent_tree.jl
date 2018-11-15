@@ -181,7 +181,7 @@ function search(tree::DescentTree,
         # init
         j =  rand(1:length(tree.data))
         d = evaluate(tree.metric, queries[i], tree.data[j])
-        push!(candidates[i], NNTuple(j, d))
+        heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
 
         while true
             unexp = unexpanded(candidates[i])
@@ -189,11 +189,12 @@ function search(tree::DescentTree,
                 break
             end
             # expand closest unexpanded neighbor
+            unexp[1].flag = true
             #unexp[1].idx is idx in data of candidate neighbor to queries[i]
             # tree.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
             for t in tree.graph[unexp[1].idx]
                 d = evaluate(tree.metric, queries[i], tree.data[t.idx])
-                heappush!(candidates[i], NNTuple(t.idx, d), max_candidates)
+                heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
             end
 
         end
