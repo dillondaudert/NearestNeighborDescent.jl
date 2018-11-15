@@ -175,7 +175,7 @@ function search(tree::DescentTree,
                 n_neighbors::Integer,
                 queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
-
+    max_candidates = trunc(Int, n_neighbors*queue_size)
     candidates = fill(binary_maxheap(NNTuple{Int, Float64}), length(queries))
     for i in eachindex(queries)
         # init
@@ -193,7 +193,7 @@ function search(tree::DescentTree,
             # tree.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
             for t in tree.graph[unexp[1].idx]
                 d = evaluate(tree.metric, queries[i], tree.data[t.idx])
-                heappush!(candidates[i], NNTuple(t.idx, d))
+                heappush!(candidates[i], NNTuple(t.idx, d), max_candidates)
             end
 
         end
@@ -203,4 +203,33 @@ end
 
 @inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
 
-function heappush!(heap, tup::NNTuple) end
+"""
+    heappush!(heap::BinaryHeap, tup::NNTuple, max_candidates)
+
+Try to push a neighbor `tup` to `heap`. This will fail (return `0`) if `tup` is
+already in `heap`, if `tup.dist > top(heap).dist`. Otherwise return `1`.
+If `length(heap) > max_candidates` after pushing, `pop` the largest candidate.
+"""
+function heappush!(heap::BinaryHeap{NNTuple{S, T}},
+                   tup::NNTuple{S, T},
+                   max_candidates::Int) where {S, T}
+
+    # case: empty heap
+    if length(heap) == 0 && max_candidates > 0
+        push!(tup)
+        return 1
+    else if tup < top(heap)
+        # check if already in heap
+        for i in eachindex(heap.valtree)
+            if heap.valtree[i].idx == tup.idx
+                return 0
+            end
+        end
+        # push and maintain size
+        push!(heap, tup)
+        if length(heap) > max_candidates
+            pop!(heap)
+        end
+    end
+    return 0
+end
