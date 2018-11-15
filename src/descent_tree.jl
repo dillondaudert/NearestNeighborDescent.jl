@@ -217,7 +217,7 @@ function heappush!(heap::BinaryHeap{NNTuple{S, T}},
 
     # case: empty heap
     if length(heap) == 0 && max_candidates > 0
-        push!(tup)
+        push!(heap, tup)
         return 1
     elseif tup < top(heap)
         # check if already in heap
@@ -231,6 +231,7 @@ function heappush!(heap::BinaryHeap{NNTuple{S, T}},
         if length(heap) > max_candidates
             pop!(heap)
         end
+        return 1
     end
     return 0
 end
