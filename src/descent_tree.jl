@@ -215,8 +215,11 @@ function heappush!(heap::BinaryHeap{NNTuple{S, T}},
                    tup::NNTuple{S, T},
                    max_candidates::Int) where {S, T}
 
+    if max_candidates == 0
+        @debug "max_candidates has a size of 0"
+        return 0
     # case: empty heap
-    if length(heap) == 0 && max_candidates > 0
+    elseif length(heap) == 0
         push!(heap, tup)
         return 1
     elseif length(heap) < max_candidates || tup < top(heap)
