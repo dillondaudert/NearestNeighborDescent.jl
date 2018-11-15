@@ -28,3 +28,23 @@ using Distances: Euclidean
         @test sort(descent_3nn, dims=2) == sort(true_3nn, dims=2)
     end
 end
+
+@testset "search tests" begin
+    data = [[0., 0., 0.],
+            [0., 0., 1.],
+            [0., 1., 0.],
+            [0., 1., 1.],
+            [1., 0., 0.],
+            [1., 0., 1.],
+            [1., 1., 0.],
+            [1., 1., 1.]]
+    queries = [[0., 0., 0.4],
+               [0., 1., 0.4]]
+
+    tree = DescentTree(data, 3)
+    cands = search(tree, queries, 2)
+    @show cands
+    @test pop!(cands[1]).idx == 1
+    @test pop!(cands[2]).idx == 3
+
+end
