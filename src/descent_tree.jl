@@ -75,16 +75,16 @@ function build_graph(data::Vector{V},
                     # both points are new
                     if i ≠ u₁ && i ≠ u₂ && u₁ < u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        c += _update_nn!(knn_heaps[u₁], NNTuple(u₂, d))
-                        c += _update_nn!(knn_heaps[u₂], NNTuple(u₁, d))
+                        c += _heappush!(knn_heaps[u₁], NNTuple(u₂, d))
+                        c += _heappush!(knn_heaps[u₂], NNTuple(u₁, d))
                     end
                 end
                 for u₂ ∈ old_neighbors[i]
                     # one point is new
                     if i ≠ u₁ && i ≠ u₂
                         d = evaluate(metric, data[u₁], data[u₂])
-                        c += _update_nn!(knn_heaps[u₁], NNTuple(u₂, d))
-                        c += _update_nn!(knn_heaps[u₂], NNTuple(u₁, d))
+                        c += _heappush!(knn_heaps[u₁], NNTuple(u₂, d))
+                        c += _heappush!(knn_heaps[u₂], NNTuple(u₁, d))
                     end
                 end
             end
@@ -98,34 +98,6 @@ function build_graph(data::Vector{V},
                     for i in 1:length(knn_heaps)]
 
     return knn_graph
-end
-
-"""
-Update the nearest neighbors of point `v`.
-"""
-function _update_nn!(v_knn,
-                     u::NNTuple{S, T}) where {S, T}
-
-    return _heappush!(v_knn, u, length(v_knn))
-    if u.dist < top(v_knn).dist
-        # this point is closer than the furthest nearest neighbor
-        # either this point exists - we update if Inf, otherwise no update
-        #   or this point is not already a NN, so we add.
-
-        # check if point in kNN and update if distance is Inf
-        for i in 1:length(v_knn)
-            exists, updated = _check_tuple(v_knn, i, u)
-            if updated
-                return 1
-            elseif exists
-                return 0
-            end
-        end
-        # u is a new nearest neighbor
-        _push_or_update!(v_knn, u, length(v_knn))
-        return 1
-    end
-    return 0
 end
 
 """
@@ -204,7 +176,7 @@ If `length(heap) > max_candidates` after pushing, `pop` the largest candidate.
 """
 function _heappush!(heap::AbstractHeap,
                     tup::NNTuple,
-                    max_candidates::Int)
+                    max_candidates::Int=length(heap))
 
     if max_candidates == 0
         @debug "max_candidates has a size of 0"
