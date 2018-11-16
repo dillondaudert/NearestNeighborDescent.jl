@@ -125,6 +125,8 @@ end
     true_dists = [.4 .4;
                   .6 .6]
     inds, dists = search(tree, queries, 2, 4)
+    @show inds
+    @show dists
     @test all(inds .== true_inds)
     @test all(dists .== true_dists)
 end
