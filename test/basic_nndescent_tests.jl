@@ -120,7 +120,11 @@ end
                [0., 1., 0.4]]
 
     tree = DescentTree(data, 3)
-    cands = search(tree, queries, 2, 4)
-    @test sort(cands[1].valtree)[1].idx == 1
-    @test sort(cands[2].valtree)[1].idx == 3
+    true_inds = [1 3;
+                 2 4]
+    true_dists = [.4 .4;
+                  .6 .6]
+    inds, dists = search(tree, queries, 2, 4)
+    @test all(inds == true_inds)
+    @test all(dists == true_dists)
 end
