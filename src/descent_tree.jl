@@ -159,10 +159,22 @@ function search(tree::DescentTree,
                 d = evaluate(tree.metric, queries[i], tree.data[t.idx])
                 _heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
             end
-
         end
     end
-    return candidates
+    knn_graph = [[pop!(candidates[i]) 
+                    for _ in 1:length(candidates[i])][end-(n_neighbors-1):end]
+                 for i in 1:length(candidates)]   
+    # TODO: redo this to avoid repetition with `knn`
+    ids = Array{Int}(undef, (n_neighbors, length(queries)))
+    dists = Array{Float64}(undef, (n_neighbors, length(queries)))
+
+    for i = 1:length(queries)
+        for j in 1:n_neighbors
+            ids[j, i] = knn_graph[i][j].idx
+            dists[j, i] = knn_graph[i][j].dist
+        end
+    end
+    return ids, dists
 end
 
 @inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
