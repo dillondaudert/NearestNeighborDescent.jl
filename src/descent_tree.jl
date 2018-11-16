@@ -161,8 +161,7 @@ function search(tree::DescentTree,
             end
         end
     end
-    knn_graph = [[pop!(candidates[i]) 
-                    for _ in 1:length(candidates[i])][end-(n_neighbors-1):end]
+    knn_graph = [[pop!(candidates[i]) for _ in 1:length(candidates[i])][end:-1:end-(n_neighbors-1)]
                  for i in 1:length(candidates)]   
     # TODO: redo this to avoid repetition with `knn`
     ids = Array{Int}(undef, (n_neighbors, length(queries)))
