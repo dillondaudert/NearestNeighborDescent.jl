@@ -1,11 +1,11 @@
-# A simple NN tree implementation
+# A simple NN graph implementation
 
-struct DescentTree{V <: AbstractVector,K,M,S <: AbstractVector} <: NNTree{V,M}
+struct DescentGraph{V <: AbstractVector,K,M,S <: AbstractVector}
     data::Vector{V}
     nneighbors::K
     metric::M
     graph::Vector{S}
-    function DescentTree(data::Vector{V},
+    function DescentGraph(data::Vector{V},
                          nneighbors::K,
                          metric::M,
                          graph::Vector{S}) where {V <: AbstractVector,
@@ -17,31 +17,31 @@ struct DescentTree{V <: AbstractVector,K,M,S <: AbstractVector} <: NNTree{V,M}
 end
 
 """
-    DescentTree(data, nneighbors [, metric = Euclidean()]) -> descenttree
+    DescentGraph(data, nneighbors [, metric = Euclidean()]) -> descentgraph
 """
-function DescentTree(data::Vector{V},
+function DescentGraph(data::Vector{V},
                      n_neighbors::Int,
                      metric::Metric = Euclidean()
                     ) where {V <: AbstractVector}
     graph = build_graph(data, metric, n_neighbors)
-    DescentTree(data, n_neighbors, metric, graph)
+    DescentGraph(data, n_neighbors, metric, graph)
 end
 
 """
-    knn(tree::DescentTree) -> ids, dists
+    knn(graph::DescentGraph) -> ids, dists
 
 Return the prebuilt kNN as a tuple `(ids, dists)` where `ids` is an `KxN` matrix
 of integer indices and `dists` is an `KxN` matrix of distances.
 """
-function knn(tree::DescentTree)
-    np, k = length(tree.graph), tree.nneighbors
+function knn(graph::DescentGraph)
+    np, k = length(graph.graph), graph.nneighbors
     ids = Array{Int}(undef, (k, np))
     dists = Array{Float64}(undef, (k, np))
 
     for i = 1:np
         for j in 1:k
-            ids[j, i] = tree.graph[i][j].idx
-            dists[j, i] = tree.graph[i][j].dist
+            ids[j, i] = graph.graph[i][j].idx
+            dists[j, i] = graph.graph[i][j].dist
         end
     end
     return ids, dists
@@ -127,13 +127,13 @@ function _neighbors(graph, sample_rate::AbstractFloat = 1.)
 end
 
 """
-    search(tree::DescentTree, queries::Vector{V}, n_neighbors, queue_size) -> indices, distances
+    search(graph::DescentGraph, queries::Vector{V}, n_neighbors, queue_size) -> indices, distances
 
-Search the kNN `tree` for the nearest neighbors of the points in `queries`.
+Search the kNN `graph` for the nearest neighbors of the points in `queries`.
 `queue_size` controls how large the candidate queue should be as a multiple of
 `n_neighbors`. Larger values increase accuracy at the cost of speed, default=1.
 """
-function search(tree::DescentTree,
+function search(graph::DescentGraph,
                 queries::Vector{V},
                 n_neighbors::Integer,
                 queue_size::Real = 1.,
@@ -142,8 +142,8 @@ function search(tree::DescentTree,
     candidates = [binary_maxheap(NNTuple{Int, Float64}) for _ in 1:length(queries)]
     for i in eachindex(queries)
         # init
-        j =  rand(1:length(tree.data))
-        d = evaluate(tree.metric, queries[i], tree.data[j])
+        j =  rand(1:length(graph.data))
+        d = evaluate(graph.metric, queries[i], graph.data[j])
         _heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
 
         while true
@@ -154,9 +154,9 @@ function search(tree::DescentTree,
             # expand closest unexpanded neighbor
             unexp[1].flag = true
             #unexp[1].idx is idx in data of candidate neighbor to queries[i]
-            # tree.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
-            for t in tree.graph[unexp[1].idx]
-                d = evaluate(tree.metric, queries[i], tree.data[t.idx])
+            # graph.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
+            for t in graph.graph[unexp[1].idx]
+                d = evaluate(graph.metric, queries[i], graph.data[t.idx])
                 _heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
             end
         end

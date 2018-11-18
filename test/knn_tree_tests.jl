@@ -72,7 +72,7 @@ end
 end
 
 @testset "neighbors tests" begin
-    # create tree
+    # create heaps
     knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:5]
     push!(knn_heaps[1], NNTuple(2, Inf))
     push!(knn_heaps[1], NNTuple(5, Inf))

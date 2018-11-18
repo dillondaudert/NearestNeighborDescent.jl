@@ -22,8 +22,8 @@ using Distances: Euclidean
         @test _3nn == true_3nn
     end
     @testset "basic_nndescent tests" begin
-        tree = DescentTree(data, 3)
-        ids, dists = knn(tree)
+        graph = DescentGraph(data, 3)
+        ids, dists = knn(graph)
         descent_3nn = transpose(ids)
         @test sort(descent_3nn, dims=2) == sort(true_3nn, dims=2)
     end
@@ -119,12 +119,12 @@ end
     queries = [[0., 0., 0.4],
                [0., 1., 0.4]]
 
-    tree = DescentTree(data, 3)
+    graph = DescentGraph(data, 3)
     true_inds = [1 3;
                  2 4]
     true_dists = [.4 .4;
                   .6 .6]
-    inds, dists = search(tree, queries, 2, 4)
+    inds, dists = search(graph, queries, 2, 4)
     @show inds
     @show dists
     @test all(inds .== true_inds)
