@@ -1,20 +1,25 @@
 # A simple NN graph implementation
 
-struct DescentGraph{V <: AbstractVector,M,S <: AbstractVector}
+struct DescentGraph{V <: AbstractVector,M,S <: Tuple}
     data::Vector{V}
     metric::M
-    graph::Vector{S}
+    graph::Matrix{S}
 end
 
 """
-    DescentGraph(data, n_neighbors [, metric = Euclidean()]) -> descentgraph
+    DescentGraph(data, n_neighbors [, metric = Euclidean()])
+
+Build an approximate kNN graph of `data` using nearest neighbor descent. 
 """
 function DescentGraph(data::Vector{V},
-                     n_neighbors::Int,
-                     metric::Metric = Euclidean()
-                    ) where {V <: AbstractVector}
-    graph = build_graph(data, metric, n_neighbors)
-    DescentGraph(data, metric, graph)
+                      n_neighbors::Integer,
+                      metric::Metric = Euclidean()
+                      sample_rate::R = 1.,
+                      precision::R = .001
+                     ) where {V <: AbstractVector, R <: AbstractFloat}
+    DescentGraph(data, 
+                 metric, 
+                 build_graph(data, metric, n_neighbors, sample_rate, precision))
 end
 
 """
@@ -43,8 +48,8 @@ Return a kNN graph for the input data according to the given metric.
 function build_graph(data::Vector{V},
                      metric::Metric,
                      k::Int,
-                     sample_rate::R = 1.,
-                     precision::R = .001
+                     sample_rate::R,
+                     precision::R
                     ) where {V <: AbstractArray, R <: AbstractFloat}
 
     np = length(data)
