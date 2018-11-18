@@ -22,5 +22,5 @@ function brute_knn(data::Vector{V},
         knn_graph[j, i] = (knn_graph_tuples[i, j].idx,
                            knn_graph_tuples[i, j].dist)
     end
-    return knn_ids
+    return knn_graph
 end
