@@ -1,8 +1,5 @@
 module NNDescent
 
-using NearestNeighbors
-import NearestNeighbors.NNTree
-
 using Distances: Metric, evaluate
 
 using DataStructures

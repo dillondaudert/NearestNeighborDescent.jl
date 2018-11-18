@@ -1,6 +1,6 @@
 # A simple NN tree implementation
 
-struct DescentTree{V <: AbstractVector,K,M,S <: AbstractVector} <: NNTree{V,M}
+struct DescentTree{V <: AbstractVector,K,M,S <: AbstractVector}
     data::Vector{V}
     nneighbors::K
     metric::M
