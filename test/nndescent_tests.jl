@@ -30,7 +30,7 @@ end
                 3 5 8;
                 4 6 7]
     @testset "brute knn test" begin
-        @test _3nn == true_3nn
+        @test getindex.(_3nn, 1) == true_3nn
     end
     @testset "basic_nndescent tests" begin
         graph = DescentGraph(data, 3)
