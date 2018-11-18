@@ -29,7 +29,6 @@ end
                 2 5 8;
                 3 5 8;
                 4 6 7])
-    @show _3nn
     @testset "brute knn test" begin
         @test sort(getindex.(_3nn, 1), dims=1) == sort(true_3nn, dims=1)
     end
