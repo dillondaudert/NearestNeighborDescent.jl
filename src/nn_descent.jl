@@ -89,9 +89,13 @@ function build_graph(data::Vector{V},
             break
         end
     end
-    knn_graph = [[pop!(knn_heaps[i]) for _ in 1:length(knn_heaps[i])][end-(k-1):end]
-                    for i in 1:length(knn_heaps)]
-
+    knn_graph = Matrix{Tuple{Int, Float64}}(undef, k, np)
+    for j in 1:np
+        rev_nns = [pop!(knn_heaps[j]) for _ in 1:length(knn_heaps[j])]
+        for i in 1:k
+            knn_graph[i, j] = (rev_nns[end-(i-1)].idx, rev_nns[end-(i-1).dist]
+        end
+    end
     return knn_graph
 end
 
