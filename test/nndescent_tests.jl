@@ -35,9 +35,7 @@ end
     end
     @testset "basic_nndescent tests" begin
         graph = DescentGraph(data, 3)
-        ids, dists = knn(graph)
-        descent_3nn = transpose(ids)
-        @test sort(descent_3nn, dims=2) == sort(true_3nn, dims=2)
+        @test sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
     end
 end
 
