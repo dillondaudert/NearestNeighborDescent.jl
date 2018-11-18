@@ -133,8 +133,8 @@ function search(graph::DescentGraph,
             # expand closest unexpanded neighbor
             unexp[1].flag = true
             #unexp[1].idx is idx in data of candidate neighbor to queries[i]
-            # graph.graph[unexp[1].idx] is an array of tuples of the approx kNN
-            for t in graph.graph[unexp[1].idx]
+            # graph.graph[:,unexp[1].idx] is an array of tuples of the approx kNN
+            for t in graph.graph[:,unexp[1].idx]
                 d = evaluate(graph.metric, queries[i], graph.data[t[1]])
                 _heappush!(candidates[i], NNTuple(t[1], d, false), max_candidates)
             end
