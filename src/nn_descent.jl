@@ -1,21 +1,20 @@
 # A simple NN graph implementation
 
-struct DescentGraph{V <: AbstractVector,K,M,S <: AbstractVector}
+struct DescentGraph{V <: AbstractVector,M,S <: AbstractVector}
     data::Vector{V}
-    nneighbors::K
     metric::M
     graph::Vector{S}
 end
 
 """
-    DescentGraph(data, nneighbors [, metric = Euclidean()]) -> descentgraph
+    DescentGraph(data, n_neighbors [, metric = Euclidean()]) -> descentgraph
 """
 function DescentGraph(data::Vector{V},
                      n_neighbors::Int,
                      metric::Metric = Euclidean()
                     ) where {V <: AbstractVector}
     graph = build_graph(data, metric, n_neighbors)
-    DescentGraph(data, n_neighbors, metric, graph)
+    DescentGraph(data, metric, graph)
 end
 
 """
@@ -25,7 +24,7 @@ Return the prebuilt kNN as a tuple `(ids, dists)` where `ids` is an `KxN` matrix
 of integer indices and `dists` is an `KxN` matrix of distances.
 """
 function knn(graph::DescentGraph)
-    np, k = length(graph.graph), graph.nneighbors
+    np, k = length(graph.graph), length(graph.graph[1])
     ids = Array{Int}(undef, (k, np))
     dists = Array{Float64}(undef, (k, np))
 
