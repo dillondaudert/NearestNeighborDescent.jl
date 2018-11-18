@@ -6,8 +6,8 @@ using Distances: Euclidean
                 [0., 1.]]
         graph = DescentGraph(data, 1)
         @test size(graph.graph) == (1, 2)
-        @test graph.graph[1,1] == 2
-        @test graph.graph[1,2] == 1
+        @test graph.graph[1,1] == (2, 1.)
+        @test graph.graph[1,2] == (1, 1.)
     end
 end
 
