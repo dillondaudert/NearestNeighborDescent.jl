@@ -1,5 +1,15 @@
 using Distances: Euclidean
 
+@testset "DescentGraph tests" begin
+    @testset "Constructor tests" begin
+        data = [[0., 0.],
+                [0., 1.]]
+        graph = DescentGraph(data, 1)
+        @test graph.graph[1,1] == 2
+        @test graph.graph[1,2] == 1
+    end
+end
+
 @testset "knn tests" begin
     data = [[0., 0., 0.],
             [0., 0., 1.],
