@@ -1,6 +1,6 @@
 module NNDescent
 
-using Distances: Metric, evaluate
+using Distances: Metric, Euclidean, evaluate
 
 using DataStructures
 
