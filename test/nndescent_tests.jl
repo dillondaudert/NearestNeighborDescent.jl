@@ -9,7 +9,7 @@ using Distances: Euclidean
         @test_broken graph.graph[1,1] == (2, 1.)
         @test_broken graph.graph[1,2] == (1, 1.)
         
-        for np = 1:10:50, k = 1:2:10
+        for np = 20:10:50, k = 1:2:10
             data = [rand(5) for _ in 1:np]
             graph = DescentGraph(data, k)
             @test size(graph.graph) == (k, np)
