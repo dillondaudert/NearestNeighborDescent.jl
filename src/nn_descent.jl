@@ -23,26 +23,6 @@ function DescentGraph(data::Vector{V},
 end
 
 """
-    knn(graph::DescentGraph) -> ids, dists
-
-Return the prebuilt kNN as a tuple `(ids, dists)` where `ids` is an `KxN` matrix
-of integer indices and `dists` is an `KxN` matrix of distances.
-"""
-function knn(graph::DescentGraph)
-    np, k = length(graph.graph), length(graph.graph[1])
-    ids = Array{Int}(undef, (k, np))
-    dists = Array{Float64}(undef, (k, np))
-
-    for i = 1:np
-        for j in 1:k
-            ids[j, i] = graph.graph[i][j].idx
-            dists[j, i] = graph.graph[i][j].dist
-        end
-    end
-    return ids, dists
-end
-
-"""
 Return a kNN graph for the input data according to the given metric.
 """
 function build_graph(data::Vector{V},
@@ -153,16 +133,15 @@ function search(graph::DescentGraph,
             # expand closest unexpanded neighbor
             unexp[1].flag = true
             #unexp[1].idx is idx in data of candidate neighbor to queries[i]
-            # graph.graph[unexp[1].idx] is an array of NNtuples of the approx kNN
+            # graph.graph[unexp[1].idx] is an array of tuples of the approx kNN
             for t in graph.graph[unexp[1].idx]
-                d = evaluate(graph.metric, queries[i], graph.data[t.idx])
-                _heappush!(candidates[i], NNTuple(t.idx, d, false), max_candidates)
+                d = evaluate(graph.metric, queries[i], graph.data[t[1]])
+                _heappush!(candidates[i], NNTuple(t[1], d, false), max_candidates)
             end
         end
     end
     knn_graph = [[pop!(candidates[i]) for _ in 1:length(candidates[i])][end:-1:end-(n_neighbors-1)]
                  for i in 1:length(candidates)]   
-    # TODO: redo this to avoid repetition with `knn`
     ids = Array{Int}(undef, (n_neighbors, length(queries)))
     dists = Array{Float64}(undef, (n_neighbors, length(queries)))
 
