@@ -5,6 +5,7 @@ using Distances: Euclidean
         data = [[0., 0.],
                 [0., 1.]]
         graph = DescentGraph(data, 1)
+        @test size(graph.graph) == (1, 2)
         @test graph.graph[1,1] == 2
         @test graph.graph[1,2] == 1
     end
