@@ -13,7 +13,7 @@ using Distances: Euclidean
             data = [rand(5) for _ in 1:np]
             graph = DescentGraph(data, k)
             @test size(graph.graph) == (k, np)
-            brute_graph = brute_knn(data, k)
+            brute_graph = brute_knn(data, Euclidean(), k)
             @test graph.graph == brute_graph
         end
     end
