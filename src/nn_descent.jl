@@ -5,15 +5,6 @@ struct DescentGraph{V <: AbstractVector,K,M,S <: AbstractVector}
     nneighbors::K
     metric::M
     graph::Vector{S}
-    function DescentGraph(data::Vector{V},
-                         nneighbors::K,
-                         metric::M,
-                         graph::Vector{S}) where {V <: AbstractVector,
-                                                  K <: Integer,
-                                                  M <: Metric,
-                                                  S <: AbstractVector}
-        new{V, K, M, S}(data, nneighbors, metric, graph)
-    end
 end
 
 """
