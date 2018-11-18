@@ -16,7 +16,7 @@ function brute_knn(data::Vector{V},
     end
 
     # start at 2 as index 1 is the distance to itself (once sorted)
-    knn_graph_tuples = transpose(sort(distances, dims=2)[1:end,2:k+1])
+    knn_graph_tuples = sort(distances, dims=1)[2:k+1,1:end]
     knn_graph = Matrix{Tuple{Int, Float64}}(undef, k, np)
     for i = 1:k, j = 1:np
         knn_graph[i, j] = (knn_graph_tuples[i, j].idx,
