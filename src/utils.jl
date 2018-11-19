@@ -32,7 +32,7 @@ function make_knn_heaps(data::Vector{V},
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
-            push!(knn_heaps[i], NNTuple(k_idxs[j], Inf))
+            push!(knn_heaps[i], NNTuple(k_idxs[j], convert(eltype(V), Inf)))
         end
     end
     return knn_heaps
