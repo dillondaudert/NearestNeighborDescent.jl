@@ -70,7 +70,7 @@ function build_graph(data::Vector{V},
             break
         end
     end
-    knn_graph = Matrix{Tuple{Int, Float64}}(undef, k, np)
+    knn_graph = Matrix{Tuple{Int, Dtype}}(undef, k, np)
     for j in 1:np
         rev_nns = [pop!(knn_heaps[j]) for _ in 1:length(knn_heaps[j])]
         for i in 1:k
@@ -119,7 +119,8 @@ function search(graph::DescentGraph,
                 queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
     max_candidates = trunc(Int, n_neighbors*queue_size)
-    candidates = [binary_maxheap(NNTuple{Int, Float64}) for _ in 1:length(queries)]
+    Dtype = typeof(graph.graph[1,1][2])
+    candidates = [binary_maxheap(NNTuple{Int, Dtype}) for _ in 1:length(queries)]
     for i in eachindex(queries)
         # init
         j =  rand(1:length(graph.data))
@@ -144,7 +145,7 @@ function search(graph::DescentGraph,
     knn_graph = [[pop!(candidates[i]) for _ in 1:length(candidates[i])][end:-1:end-(n_neighbors-1)]
                  for i in 1:length(candidates)]   
     ids = Array{Int}(undef, (n_neighbors, length(queries)))
-    dists = Array{Float64}(undef, (n_neighbors, length(queries)))
+    dists = Array{Dtype}(undef, (n_neighbors, length(queries)))
 
     for i = 1:length(queries)
         for j in 1:n_neighbors
