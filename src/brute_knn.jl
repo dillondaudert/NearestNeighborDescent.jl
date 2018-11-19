@@ -4,11 +4,11 @@ Returns an KxN array of tuples (index, distance) of the k nearest neighbors
 for each point in `data`.
 """
 function brute_knn(data::Vector{V},
-                   metric::Metric,
-                   k::Int) where {V <: AbstractArray}
+                   metric::M,
+                   k::Int) where {V <: AbstractArray, M <: Metric}
 
     np = length(data)
-    Dtype = (@code_typed evaluate(metrics, data[1], data[1]))[2]
+    Dtype = code_typed(evaluate, (M, V, V))[2]
     distances = Matrix{NNTuple{Int, Dtype}}(undef, np, np)
 
     @inbounds @fastmath for i = 1:np, j = 1:np
