@@ -8,7 +8,8 @@ function brute_knn(data::Vector{V},
                    k::Int) where {V <: AbstractArray}
 
     np = length(data)
-    distances = fill(NNTuple(0, 0.), (np, np))
+    Dtype = (@code_typed evaluate(metrics, data[1], data[1]))[2]
+    distances = Matrix{NNTuple{Int, Dtype}}(undef, np, np)
 
     @inbounds @fastmath for i = 1:np, j = 1:np
         d = evaluate(metric, data[i], data[j])
@@ -17,7 +18,7 @@ function brute_knn(data::Vector{V},
 
     # start at 2 as index 1 is the distance to itself (once sorted)
     knn_graph_tuples = sort(distances, dims=2)[1:end, 2:k+1]
-    knn_graph = Matrix{Tuple{Int, Float64}}(undef, k, np)
+    knn_graph = Matrix{Tuple{Int, Dtype}}(undef, k, np)
     for i = 1:k, j = 1:np
         knn_graph[i, j] = (knn_graph_tuples[j, i].idx,
                            knn_graph_tuples[j, i].dist)
