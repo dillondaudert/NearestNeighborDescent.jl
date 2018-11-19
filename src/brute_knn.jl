@@ -11,7 +11,7 @@ function brute_knn(data::Vector{V},
     Dtype = code_typed(evaluate, (M, V, V))[1][2]
     distances = Matrix{NNTuple{Int, Dtype}}(undef, np, np)
 
-    @inbounds @fastmath for i = 1:np, j = 1:np
+    @inbounds @fastmath for j = 1:np, i = 1:np
         d = evaluate(metric, data[i], data[j])
         distances[i, j] = NNTuple(j, d)
     end
