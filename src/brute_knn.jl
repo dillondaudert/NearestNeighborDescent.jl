@@ -25,3 +25,32 @@ function brute_knn(data::Vector{V},
     end
     return knn_graph
 end
+
+"""
+    brute_search(data, queries, k, metric) -> idxs, dists
+
+Search for the nearest `k` neighbors of `q` in `queries` in `data`.
+"""
+function brute_search(data::Vector{V}, 
+                      queries::Vector{V}, 
+                      k::Integer, 
+                      metric::M=Euclidean()) where {V <: AbstractVector,
+                                                    M <: Metric}
+    np = length(data)
+    nq = length(queries)
+    Dtype = code_typed(evaluate, (M, V, V))[1][2]
+    distances = Matrix{NNTuple{Int, Dtype}}(undef, np, nq)
+    
+    @inbounds @fastmath for i = 1:nq, j = 1:np
+        d = evaluate(metric, queries[i], data[j])
+        distances[j, i] = NNTuple(j, d)
+    end
+    
+    knn_graph_tuples = sort(distances, dims=1)[1:k, 1:end]
+    knn_graph = Matrix{Tuple{Int, Dtype}}(undef, k, nq)
+    for i = 1:k, j = 1:nq
+        knn_graph[i, j] = (knn_graph_tuples[i, j].idx, knn_graph_tuples[i, j].dist)
+    end
+    return getindex.(knn_graph, 1), getindex.(knn_graph, 2)
+end
+
