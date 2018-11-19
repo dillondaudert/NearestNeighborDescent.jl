@@ -26,15 +26,15 @@ end
 Return a kNN graph for the input data according to the given metric.
 """
 function build_graph(data::Vector{V},
-                     metric::Metric,
+                     metric::M,
                      k::Int,
                      sample_rate::R,
                      precision::R
-                    ) where {V <: AbstractArray, R <: AbstractFloat}
+                    ) where {V <: AbstractArray, M <: Metric, R <: AbstractFloat}
 
     np = length(data)
     # initialize with random neighbors
-    Dtype = (@code_typed evaluate(metric, data[1], data[1]))[2]
+    Dtype = code_typed(evaluate, (M, V, V)[2]
     knn_heaps = make_knn_heaps(data, k, Dtype)
 
     # until no further updates
