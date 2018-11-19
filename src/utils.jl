@@ -28,8 +28,7 @@ end
 function make_knn_heaps(data::Vector{V},
                         n_neighbors::Int) where {V <: AbstractArray}
     np = length(data)
-    #knn_tree = [fill(NNTuple(-1, Inf), (n_neighbors)) for _ in 1:np]
-    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:np]
+    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, eltype(V)}) for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
