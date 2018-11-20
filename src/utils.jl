@@ -6,6 +6,7 @@ mutable struct NNTuple{R, S}
     dist::Union{S, Missing}
     flag::Bool
 end
+NNTuple{R, S}(a::R, b::Missing) where {R, S} = NNTuple(a, missing, true)
 NNTuple(a, b) = NNTuple(a, b, true)
 
 <(a::NNTuple, b::NNTuple) = a.dist < b.dist
