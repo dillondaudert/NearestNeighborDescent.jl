@@ -55,19 +55,37 @@
 end
 
 @testset "make_knn_heaps tests" begin
-    data = Vector([rand(3) for _ in 1:10])
-    n_neighbors = 3
+    @testset "Float64 tests" begin
+        data = Vector([rand(3) for _ in 1:10])
+        n_neighbors = 3
 
-    knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
+        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
 
-    @test length(knn_heaps) == length(data)
-    for p in 1:length(knn_heaps)
-        @test length(knn_heaps[p]) == n_neighbors
-        for t = 1:length(knn_heaps[p])
-            @test knn_heaps[p][t].idx ≠ p
-            @test knn_heaps[p][t].idx ≤ length(data)
-            @test knn_heaps[p][t].dist == Inf
+        @test length(knn_heaps) == length(data)
+        for p in 1:length(knn_heaps)
+            @test length(knn_heaps[p]) == n_neighbors
+            for t = 1:length(knn_heaps[p])
+                @test knn_heaps[p][t].idx ≠ p
+                @test knn_heaps[p][t].idx ≤ length(data)
+                @test knn_heaps[p][t].dist === missing
+            end
         end
+    end
+    @testset "Int tests" begin
+        data = Vector([rand([0, 1]) for _ in 1:10])
+        n_neighbors = 2
+        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
+        
+        @test length(knn_heaps) == length(data)
+        for p in 1:length(knn_heaps)
+            @test length(knn_heaps[p]) == n_neighbors
+            for t = 1:length(knn_heaps[p])
+                @test knn_heaps[p][t].idx ≠ p
+                @test knn_heaps[p][t].idx ≤ length(data)
+                @test knn_heaps[p][t].dist === missing
+            end
+        end
+        
     end
 end
 

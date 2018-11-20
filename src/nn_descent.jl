@@ -214,7 +214,7 @@ function _check_tuple() end
 
 @inline function _check_tuple(h::MutableBinaryHeap, i, t)
     if h[i].idx == t.idx
-        if h[i].dist == Inf
+        if h[i].dist === missing
             h[i] = t
             return true, true
         end

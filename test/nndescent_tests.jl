@@ -1,4 +1,4 @@
-using Distances: Euclidean
+using Distances: Euclidean, CosineDist, Hamming
 
 @testset "DescentGraph tests" begin
     @testset "Constructor tests" begin
