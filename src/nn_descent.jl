@@ -214,7 +214,7 @@ function _check_tuple() end
 
 @inline function _check_tuple(h::MutableBinaryHeap, i, t)
     if h[i].idx == t.idx
-        if h[i].dist === missing
+        if h[i].dist == typemax(typeof(h[i].dist))
             h[i] = t
             return true, true
         end
