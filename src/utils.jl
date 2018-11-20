@@ -27,7 +27,7 @@ end
 
 function make_knn_heaps(data::Vector{V},
                         n_neighbors::Int,
-                        ::Type{D}=Float64) where {V <: AbstractArray, D}
+                        ::Type{D}=Float64) where {V <: AbstractArray, D <: Real}
     np = length(data)
     knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Union{D, Missing}}) for _ in 1:np]
     for i in 1:np
