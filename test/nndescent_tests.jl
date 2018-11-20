@@ -50,6 +50,11 @@ end
         desc_3nn = DescentGraph(data, 3, CosineDist()).graph
         @test getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
     end
+    @testset "Hamming" begin
+        data = [rand([0, 1], 5) for _ in 1:10]
+        _3nn = brute_knn(data, Hamming(), 3)
+        desc_3nn = DescentGraph(data, 3, Hamming()).graph
+        @test getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
 end
 
 @testset "_heappush! tests" begin
