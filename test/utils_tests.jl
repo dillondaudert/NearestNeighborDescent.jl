@@ -67,7 +67,7 @@ end
             for t = 1:length(knn_heaps[p])
                 @test knn_heaps[p][t].idx ≠ p
                 @test knn_heaps[p][t].idx ≤ length(data)
-                @test knn_heaps[p][t].dist === missing
+                @test knn_heaps[p][t].dist == typemax(Float64)
             end
         end
     end
@@ -82,7 +82,7 @@ end
             for t = 1:length(knn_heaps[p])
                 @test knn_heaps[p][t].idx ≠ p
                 @test knn_heaps[p][t].idx ≤ length(data)
-                @test knn_heaps[p][t].dist === missing
+                @test knn_heaps[p][t].dist == typemax(Int)
             end
         end
         

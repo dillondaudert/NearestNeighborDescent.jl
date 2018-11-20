@@ -3,10 +3,8 @@ import Base: <, isless
 
 mutable struct NNTuple{R, S}
     idx::R
-    dist::Union{S, Missing}
+    dist::S
     flag::Bool
-    NNTuple(a::R, b::S, c::Bool) where{R, S} = new{R, S}(a, b, c)
-    NNTuple{R, S}(a::R, b::Missing) where {R, S} = new{R, S}(a, missing, true)
 end
 NNTuple(a, b) = NNTuple(a, b, true)
 
@@ -35,7 +33,7 @@ function make_knn_heaps(data::Vector{V},
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
-            push!(knn_heaps[i], NNTuple{Int, D}(k_idxs[j], missing))
+            push!(knn_heaps[i], NNTuple{Int, D}(k_idxs[j], typemax(D)))
         end
     end
     return knn_heaps
