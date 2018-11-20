@@ -56,7 +56,7 @@ end
 
 @testset "make_knn_heaps tests" begin
     @testset "Float64 tests" begin
-        data = Vector([rand(3) for _ in 1:10])
+        data = [rand(3) for _ in 1:10]
         n_neighbors = 3
 
         knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
@@ -72,7 +72,7 @@ end
         end
     end
     @testset "Int tests" begin
-        data = Vector([rand([0, 1]) for _ in 1:10])
+        data = [rand([0, 1], 3) for _ in 1:10]
         n_neighbors = 2
         knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Int)
         
