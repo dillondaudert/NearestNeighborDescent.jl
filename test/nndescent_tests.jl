@@ -17,30 +17,38 @@ using Distances: Euclidean, CosineDist, Hamming
     end
 end
 
-@testset "knn tests" begin
-    data = [[0., 0., 0.],
-            [0., 0., 1.],
-            [0., 1., 0.],
-            [0., 1., 1.],
-            [1., 0., 0.],
-            [1., 0., 1.],
-            [1., 1., 0.],
-            [1., 1., 1.]]
-    _3nn = brute_knn(data, Euclidean(), 3)
-    true_3nn = transpose([2 3 5;
-                1 4 6;
-                1 4 7;
-                2 3 8;
-                1 6 7;
-                2 5 8;
-                3 5 8;
-                4 6 7])
-    @testset "brute knn test" begin
-        @test sort(getindex.(_3nn, 1), dims=1) == sort(true_3nn, dims=1)
+@testset "Distances tests" begin
+    @testset "Euclidean" begin
+        data = [[0., 0., 0.],
+                [0., 0., 1.],
+                [0., 1., 0.],
+                [0., 1., 1.],
+                [1., 0., 0.],
+                [1., 0., 1.],
+                [1., 1., 0.],
+                [1., 1., 1.]]
+        _3nn = brute_knn(data, Euclidean(), 3)
+        true_3nn = transpose([2 3 5;
+                    1 4 6;
+                    1 4 7;
+                    2 3 8;
+                    1 6 7;
+                    2 5 8;
+                    3 5 8;
+                    4 6 7])
+        @testset "brute knn test" begin
+            @test sort(getindex.(_3nn, 1), dims=1) == sort(true_3nn, dims=1)
+        end
+        @testset "basic_nndescent tests" begin
+            graph = DescentGraph(data, 3)
+            @test sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
+        end
     end
-    @testset "basic_nndescent tests" begin
-        graph = DescentGraph(data, 3)
-        @test sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
+    @testset "CosineDist" begin
+        data = [rand(5) for _ in 1:10]
+        _3nn = brute_knn(data, CosineDist(), 3)
+        desc_3nn = DescentGraph(data, 3, CosineDist()).graph
+        @test getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
     end
 end
 
