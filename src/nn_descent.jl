@@ -13,7 +13,7 @@ Build an approximate kNN graph of `data` using nearest neighbor descent.
 """
 function DescentGraph(data::Vector{V},
                       n_neighbors::Integer,
-                      metric::Metric = Euclidean(),
+                      metric::SemiMetric = Euclidean(),
                       sample_rate::R = 1.,
                       precision::R = .001
                      ) where {V <: AbstractVector, R <: AbstractFloat}
@@ -30,7 +30,9 @@ function build_graph(data::Vector{V},
                      k::Int,
                      sample_rate::R,
                      precision::R
-                    ) where {V <: AbstractArray, M <: Metric, R <: AbstractFloat}
+                    ) where {V <: AbstractArray, 
+                             M <: SemiMetric, 
+                             R <: AbstractFloat}
 
     np = length(data)
     # initialize with random neighbors
