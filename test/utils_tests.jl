@@ -74,7 +74,7 @@ end
     @testset "Int tests" begin
         data = Vector([rand([0, 1]) for _ in 1:10])
         n_neighbors = 2
-        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
+        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Int)
         
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
