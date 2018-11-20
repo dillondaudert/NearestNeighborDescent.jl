@@ -55,6 +55,7 @@ end
         _3nn = brute_knn(data, Hamming(), 3)
         desc_3nn = DescentGraph(data, 3, Hamming()).graph
         @test getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
+    end
 end
 
 @testset "_heappush! tests" begin
