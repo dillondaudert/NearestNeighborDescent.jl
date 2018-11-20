@@ -3,7 +3,7 @@ import Base: <, isless
 
 mutable struct NNTuple{R, S}
     idx::R
-    dist::S
+    dist::Union{S, Missing}
     flag::Bool
 end
 NNTuple(a, b) = NNTuple(a, b, true)
@@ -29,7 +29,7 @@ function make_knn_heaps(data::Vector{V},
                         n_neighbors::Int,
                         ::Type{D}=Float64) where {V <: AbstractArray, D <: Real}
     np = length(data)
-    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Union{D, Missing}}) for _ in 1:np]
+    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, D}) for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in 1:length(k_idxs)
