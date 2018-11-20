@@ -5,7 +5,7 @@ for each point in `data`.
 """
 function brute_knn(data::Vector{V},
                    metric::M,
-                   k::Int) where {V <: AbstractArray, M <: Metric}
+                   k::Int) where {V <: AbstractArray, M <: SemiMetric}
 
     np = length(data)
     Dtype = code_typed(evaluate, (M, V, V))[1][2]
@@ -35,7 +35,7 @@ function brute_search(data::Vector{V},
                       queries::Vector{V}, 
                       k::Integer, 
                       metric::M=Euclidean()) where {V <: AbstractVector,
-                                                    M <: Metric}
+                                                    M <: SemiMetric}
     np = length(data)
     nq = length(queries)
     Dtype = code_typed(evaluate, (M, V, V))[1][2]
