@@ -7,7 +7,7 @@ include("benchutils.jl")
 
 const SUITE = BenchmarkGroup()
 
-SUITE["nndescent"] = BenchmarkGroup("constructor", "search")
+SUITE["nndescent"] = BenchmarkGroup(["constructor", "search"])
 SUITE["nndescent"]["rand"] = @benchmarkable DescentGraph($rand_data, 10)
 SUITE["nndescent"]["fmnist"] = @benchmarkable DescentGraph($FMNIST_data, 10)
 SUITE["nndescent"]["mnist"] = @benchmarkable DescentGraph($MNIST_data, 10)
