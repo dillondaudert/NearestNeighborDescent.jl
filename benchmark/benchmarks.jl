@@ -1,5 +1,6 @@
 using NNDescent
 using NNDescent: brute_knn, brute_search, NNTuple
+using BenchmarkTools
 using PkgBenchmark
 
 include("benchutils.jl")
