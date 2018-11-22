@@ -189,7 +189,12 @@ function _heappush!(heap::AbstractHeap,
             end
         end
         # push and maintain size
-        _push_or_update!(heap, tup, max_candidates)
+        # TODO: only update if at max length, not always
+        if length(heap) == max_candidates
+            _push_or_update!(heap, tup, max_candidates)
+        else
+            push!(heap, tup)
+        end
         return 1
     end
     return 0
