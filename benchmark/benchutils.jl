@@ -4,6 +4,9 @@ using MLDatasets
 recall(nn, true_nn) = sum(_recall(nn[:,i], true_nn[:,i]) for i in 1:size(nn,2))/size(nn,2)
 _recall(π, πₜ) = length(intersect(π, πₜ))/length(πₜ)
 
+rand_data = [rand(100) for _ in 1:5000]
+rand_queries = [rand(100) for _ in 1:500]
+
 reshape_mnist(data) = reshape(data, size(data)[1]*size(data)[2], size(data)[3])
 
 FMNIST_train, _ = FashionMNIST.traindata()
