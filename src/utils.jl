@@ -27,13 +27,16 @@ end
 
 function make_knn_heaps(data::Vector{V},
                         n_neighbors::Int,
-                        ::Type{D}=Float64) where {V <: AbstractArray, D <: Real}
+                        metric::M) where {V <: AbstractArray, 
+                                          M <: SemiMetric}
     np = length(data)
+    D = code_typed(evaluate, (M, V, V))[1][2]
     knn_heaps = [mutable_binary_maxheap(NNTuple{Int, D}) for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
-        for j in 1:length(k_idxs)
-            push!(knn_heaps[i], NNTuple(k_idxs[j], typemax(D)))
+        for j in k_idxs
+            d = evaluate(metric, data[i], data[j])
+            push!(knn_heaps[i], NNTuple(j, d)
         end
     end
     return knn_heaps

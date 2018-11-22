@@ -59,7 +59,7 @@ end
         data = [rand(3) for _ in 1:10]
         n_neighbors = 3
 
-        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors)
+        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Euclidean())
 
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
@@ -67,14 +67,15 @@ end
             for t = 1:length(knn_heaps[p])
                 @test knn_heaps[p][t].idx ≠ p
                 @test knn_heaps[p][t].idx ≤ length(data)
-                @test knn_heaps[p][t].dist == typemax(Float64)
+                d = evaluate(Euclidean(), data[p], data[knn_heaps[p][t].idx])
+                @test knn_heaps[p][t].dist == d
             end
         end
     end
     @testset "Int tests" begin
         data = [rand([0, 1], 3) for _ in 1:10]
         n_neighbors = 2
-        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Int)
+        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Hamming())
         
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
@@ -82,7 +83,8 @@ end
             for t = 1:length(knn_heaps[p])
                 @test knn_heaps[p][t].idx ≠ p
                 @test knn_heaps[p][t].idx ≤ length(data)
-                @test knn_heaps[p][t].dist == typemax(Int)
+                d = evaluate(Hamming(), data[p], data[knn_heaps[p][t].idx])
+                @test knn_heaps[p][t].dist == d
             end
         end
         
