@@ -37,7 +37,7 @@ function build_graph(data::Vector{V},
     np = length(data)
     # initialize with random neighbors
     Dtype = code_typed(evaluate, (M, V, V))[1][2]
-    knn_heaps = make_knn_heaps(data, k, Dtype)
+    knn_heaps = make_knn_heaps(data, k, metric)
 
     # until no further updates
     while true
