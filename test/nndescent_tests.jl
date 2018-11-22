@@ -5,8 +5,8 @@
                 [0., 1.]]
         graph = DescentGraph(data, 1)
         @test size(graph.graph) == (1, 2)
-        @test_broken graph.graph[1,1] == (2, 1.)
-        @test_broken graph.graph[1,2] == (1, 1.)
+        @test graph.graph[1,1] == (2, 1.)
+        @test graph.graph[1,2] == (1, 1.)
         
         for np = 20:10:50, k = 1:2:10
             data = [rand(5) for _ in 1:np]
