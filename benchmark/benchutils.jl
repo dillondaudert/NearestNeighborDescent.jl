@@ -1,26 +1,21 @@
 # Utilities for benchmarking NN Descent
-using BenchmarkTools
-using Distances: Euclidean
-using NNDescent: _nn_descent, brute_knn
+using MLDatasets
 
-recall(nn, true_nn) = sum(_recall(nn[i,:], true_nn[i,:]) for i in 1:size(nn,1))/size(nn,1)
+recall(nn, true_nn) = sum(_recall(nn[:,i], true_nn[:,i]) for i in 1:size(nn,2))/size(nn,2)
 _recall(π, πₜ) = length(intersect(π, πₜ))/length(πₜ)
 
-function run_benchmarks()
-    nn_descent_recall = []
-    nn_descent_time = []
-    brute_knn_time = []
-    for ρ in [.01, .2, 1.], k in [5, 10, 20], n in [5000]
-        print("Benchmarking ρ = $ρ, n = $n, k = $k\n")
-        data = [rand(20) for _ in 1:n]
-        #append!(brute_knn_time, @belapsed brute_knn($data, $Euclidean(), $k))
-        append!(nn_descent_time, @belapsed _nn_descent($data, $Euclidean(), $k, $ρ))
-        true_nn = brute_knn(data, Euclidean(), k)
-        desc_nn = _nn_descent(data, Euclidean(), k)
-        append!(nn_descent_recall, recall(desc_nn, true_nn))
-    end
-    @show nn_descent_recall
-    @show nn_descent_time
-    @show brute_knn_time
-    return
-end
+reshape_mnist(data) = reshape(data, size(data)[1]*size(data)[2], size(data)[3])
+
+FMNIST_train, _ = FashionMNIST.traindata()
+FMNIST_test, _ = FashionMNIST.testdata()
+FMNIST_train = reshape_mnist(FMNIST_train)
+FMNIST_test = reshape_mnist(FMNIST_test)
+FMNIST_data = [convert.(Float64, FMNIST_train[:,i]) for i = 1:5000]
+FMNIST_queries = [convert.(Float64, FMNIST_test[:,i]) for i = 1:500]
+
+MNIST_train, _ = MNIST.traindata()
+MNIST_train = reshape_mnist(MNIST_train)
+MNIST_data = [convert.(Float64, MNIST_train[:,i]) for i = 1:5000]
+MNIST_test, _ = MNIST.testdata()
+MNIST_test = reshape_mnist(MNIST_test)
+MNIST_queries = [convert.(Float64, MNIST_test[:,i]) for i = 1:500]
