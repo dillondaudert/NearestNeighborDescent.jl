@@ -36,7 +36,8 @@ function make_knn_heaps(data::Vector{V},
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in k_idxs
             d = evaluate(metric, data[i], data[j])
-            push!(knn_heaps[i], NNTuple(j, d))
+            _heappush!(knn_heaps[i], NNTuple(j, d), n_neighbors)
+            _heappush!(knn_heaps[j], NNTuple(i, d), n_neighbors)
         end
     end
     return knn_heaps
