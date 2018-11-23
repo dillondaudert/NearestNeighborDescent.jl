@@ -134,13 +134,13 @@ function search(graph::DescentGraph,
         seen[j] = true
         
         while true
-            unexp = unexpanded(candidates[i])
-            if length(unexp) == 0
+            unexp = min_flagged(candidates[i])
+            if unexp.idx == -1
                 break
             end
             # expand closest unexpanded neighbor
-            unexp[1].flag = true
-            for t in graph.graph[:,unexp[1].idx]
+            unexp.flag = true
+            for t in graph.graph[:,unexp.idx]
                 if !seen[t[1]]
                     seen[t[1]] = true
                     d = evaluate(graph.metric, 
@@ -167,6 +167,15 @@ function search(graph::DescentGraph,
     return ids, dists
 end
 
+function min_flagged(heap)
+    min_tup = NNTuple(-1, typemax(typeof(heap.valtree[1].dist)))
+    for t in heap.valtree
+        if t < min_tup
+            min_tup = t
+        end
+    end
+    return min_tup
+end
 @inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
 
 """
