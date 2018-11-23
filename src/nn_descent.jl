@@ -170,7 +170,7 @@ end
 function min_flagged(heap)
     min_tup = NNTuple(-1, typemax(typeof(heap.valtree[1].dist)))
     for t in heap.valtree
-        if t < min_tup
+        if t < min_tup && !t.flag
             min_tup = t
         end
     end
