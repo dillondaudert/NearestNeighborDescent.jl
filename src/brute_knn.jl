@@ -8,7 +8,7 @@ function brute_knn(data::Vector{V},
                    k::Int) where {V <: AbstractArray, M <: SemiMetric}
 
     np = length(data)
-    Dtype = code_typed(evaluate, (M, V, V))[1][2]
+    Dtype = result_type(metric, data[1], data[1])
     distances = Matrix{NNTuple{Int, Dtype}}(undef, np, np)
 
     @inbounds @fastmath for j = 1:np, i = 1:np
@@ -38,7 +38,7 @@ function brute_search(data::Vector{V},
                                                     M <: SemiMetric}
     np = length(data)
     nq = length(queries)
-    Dtype = code_typed(evaluate, (M, V, V))[1][2]
+    Dtype = result_type(metric, data[1], data[1])
     distances = Matrix{NNTuple{Int, Dtype}}(undef, np, nq)
     
     @inbounds @fastmath for i = 1:nq, j = 1:np

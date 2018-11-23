@@ -38,7 +38,7 @@ function build_graph(data::Vector{V},
 
     np = length(data)
     # initialize with random neighbors
-    Dtype = code_typed(evaluate, (M, V, V))[1][2]
+    Dtype = result_type(metric, data[1], data[1])
     knn_heaps = make_knn_heaps(data, k, metric)
 
     # until no further updates
@@ -123,7 +123,7 @@ function search(graph::DescentGraph,
                 queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
     max_candidates = trunc(Int, n_neighbors*queue_size)
-    Dtype = typeof(graph.graph[1,1][2])
+    Dtype = result_type(graph.metric, queries[1], queries[1])
     candidates = [binary_maxheap(NNTuple{Int, Dtype}) for _ in 1:length(queries)]
     for i in eachindex(queries)
         # init
