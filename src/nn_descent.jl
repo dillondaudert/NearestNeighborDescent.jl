@@ -14,20 +14,22 @@ Build an approximate kNN graph of `data` using nearest neighbor descent.
 function DescentGraph(data::Vector{V},
                       n_neighbors::Integer,
                       metric::SemiMetric = Euclidean(),
+                      max_iters::Integer = 10,
                       sample_rate::R = 1.,
                       precision::R = .001
                      ) where {V <: AbstractVector, R <: AbstractFloat}
     DescentGraph(data, 
                  metric, 
-                 build_graph(data, metric, n_neighbors, sample_rate, precision))
+                 build_graph(data, n_neighbors, metric, max_iters, sample_rate, precision))
 end
 
 """
 Return a kNN graph for the input data according to the given metric.
 """
 function build_graph(data::Vector{V},
+                     k::Integer,
                      metric::M,
-                     k::Int,
+                     max_iters::Integer,
                      sample_rate::R,
                      precision::R
                     ) where {V <: AbstractArray, 
@@ -40,7 +42,7 @@ function build_graph(data::Vector{V},
     knn_heaps = make_knn_heaps(data, k, metric)
 
     # until no further updates
-    while true
+    for i = 1:max_iters
         # get the fw and bw neighbors of each point
         old_fw, fw, old_bw, bw = _neighbors(knn_heaps, sample_rate)
         old_neighbors = [union(old_fw[i], old_bw[i]) for i in 1:np]
@@ -68,7 +70,7 @@ function build_graph(data::Vector{V},
             end
 
         end
-        if c < precision*k*np
+        if c <= precision*k*np
             break
         end
     end
@@ -189,7 +191,6 @@ function _heappush!(heap::AbstractHeap,
             end
         end
         # push and maintain size
-        # TODO: only update if at max length, not always
         if length(heap) == max_candidates
             _push_or_update!(heap, tup, max_candidates)
         else
