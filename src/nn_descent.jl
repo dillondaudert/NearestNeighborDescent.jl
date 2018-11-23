@@ -127,10 +127,12 @@ function search(graph::DescentGraph,
     candidates = [binary_maxheap(NNTuple{Int, Dtype}) for _ in 1:length(queries)]
     for i in eachindex(queries)
         # init
+        seen = fill(false, length(graph.data))
         j =  rand(1:length(graph.data))
         d = evaluate(graph.metric, queries[i], graph.data[j])
         _heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
-
+        seen[j] = true
+        
         while true
             unexp = unexpanded(candidates[i])
             if length(unexp) == 0
@@ -138,11 +140,16 @@ function search(graph::DescentGraph,
             end
             # expand closest unexpanded neighbor
             unexp[1].flag = true
-            #unexp[1].idx is idx in data of candidate neighbor to queries[i]
-            # graph.graph[:,unexp[1].idx] is an array of tuples of the approx kNN
             for t in graph.graph[:,unexp[1].idx]
-                d = evaluate(graph.metric, queries[i], graph.data[t[1]])
-                _heappush!(candidates[i], NNTuple(t[1], d, false), max_candidates)
+                if !seen[t[1]]
+                    seen[t[1]] = true
+                    d = evaluate(graph.metric, 
+                                 queries[i], 
+                                 graph.data[t[1]])
+                    _unchecked_heappush!(candidates[i], 
+                                         NNTuple(t[1], d, false),
+                                         max_candidates)
+                end
             end
         end
     end
@@ -201,17 +208,42 @@ function _heappush!(heap::AbstractHeap,
     return 0
 end
 
+"""
+Push `tup` onto `heap` without checkout if it already exists in the
+heap.
+"""
+function _unchecked_heappush!(heap::AbstractHeap,
+                              tup::NNTuple,
+                              max_candidates::Int=length(heap))
+    if max_candidates == 0
+        @debug "max_candidates has a size of 0"
+        return 0
+    end
+    # case: heap not full
+    if length(heap) < max_candidates
+        push!(heap, tup)
+        return 1
+    # heap full but this neighbor closer
+    elseif tup < top(heap)
+        # push and maintain size
+        _push_or_update!(heap, tup, max_candidates)
+        return 1
+    end
+    return 0
+                        
+end
+
 @inline function _push_or_update!(h::MutableBinaryHeap, t, maxc)
     _, i = top_with_handle(h)
     h[i] = t
-    nothing
+    return
 end
 @inline function _push_or_update!(h::BinaryHeap, t, maxc)
     push!(h, t)
     if length(h) > maxc
         pop!(h)
     end
-    nothing
+    return
 end
 
 """
