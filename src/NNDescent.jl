@@ -1,7 +1,6 @@
 module NNDescent
 
-using Distances: SemiMetric, Euclidean, evaluate
-
+using Distances: SemiMetric, Euclidean, evaluate, result_type
 using DataStructures
 
 include("heaps.jl")
