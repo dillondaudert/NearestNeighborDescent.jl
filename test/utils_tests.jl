@@ -76,7 +76,7 @@ end
         data = [rand([0, 1], 3) for _ in 1:10]
         n_neighbors = 2
         knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Hamming())
-        
+
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
             @test length(knn_heaps[p]) == n_neighbors
@@ -87,7 +87,7 @@ end
                 @test knn_heaps[p][t].dist == d
             end
         end
-        
+
     end
 end
 
@@ -132,5 +132,83 @@ end
         @test old_bw[3] == [5]
         @test old_bw[4] == [2, 3, 5]
         @test old_bw[5] == [1]
+    end
+end
+
+@testset "_heappush! tests" begin
+    @testset "immutable heap tests" begin
+        @testset "max_cand tests" begin
+            h = binary_maxheap(NNTuple{Int, Float64})
+            t = NNTuple(1, 1.)
+            _heappush!(h, t, 0)
+            @test length(h) == 0
+
+            _heappush!(h, t, 1)
+            @test length(h) == 1
+            @test top(h) == t
+
+            d = NNTuple(2, .5)
+            _heappush!(h, d, 1)
+            @test length(h) == 1
+            @test top(h) == d
+        end
+
+        @testset "return val tests" begin
+            h = binary_maxheap(NNTuple{Int, Float64})
+            # max_cand
+            @test _heappush!(h, NNTuple(1, rand()), 0) == 0
+            # empty heap push
+            @test _heappush!(h, NNTuple(1, 1.), 1) == 1
+            # length == max AND further away, no push
+            @test _heappush!(h, NNTuple(2, 2.), 1) == 0
+            # length == max BUT closer, push
+            @test _heappush!(h, NNTuple(3, .5), 1) == 1
+            @test top(h).idx == 3
+            @test top(h).dist == .5
+            @test length(h) == 1
+            # length < max AND further, push
+            @test _heappush!(h, NNTuple(4, 4.), 2) == 1
+            @test top(h).idx == 4
+            @test top(h).dist == 4.
+            # tuple already in heap, no push
+            @test _heappush!(h, NNTuple(3, .5), 3) == 0
+            @test length(h) == 2
+            @test top(h).idx == 4
+            @test top(h).dist == 4.
+        end
+    end
+    @testset "mutable heap tests" begin
+        @testset "no changes tests" begin
+            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            push!(v_knn, NNTuple(1, 10.))
+            push!(v_knn, NNTuple(2, 20.))
+            push!(v_knn, NNTuple(3, 30.))
+            @test _heappush!(v_knn, NNTuple(4, 40.)) == 0
+            @test length(v_knn) == 3
+            @test top(v_knn).idx == 3
+            @test top(v_knn).dist == 30.
+        end
+        @testset "exists tests" begin
+            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            push!(v_knn, NNTuple(1, 10.))
+            push!(v_knn, NNTuple(2, 20.))
+            push!(v_knn, NNTuple(3, Inf))
+            @test _heappush!(v_knn, NNTuple(3, 5.)) == 1
+            @test v_knn[3].idx == 3
+            @test v_knn[3].dist == 5.
+            @test top(v_knn).idx == 2
+            @test top(v_knn).dist == 20.
+            @test _heappush!(v_knn, NNTuple(3, 5.)) == 0
+        end
+        @testset "new nearest neighbor tests" begin
+            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            push!(v_knn, NNTuple(1, 10.))
+            push!(v_knn, NNTuple(2, 20.))
+            push!(v_knn, NNTuple(3, 30.))
+            @test top(v_knn).idx == 3
+            @test _heappush!(v_knn, NNTuple(4, 15.)) == 1
+            @test length(v_knn) == 3
+            @test top(v_knn).idx == 2
+        end
     end
 end
