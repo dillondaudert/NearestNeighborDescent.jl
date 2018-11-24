@@ -26,8 +26,8 @@ function DescentGraph(data::Vector{V},
                       sample_rate::R = 1.,
                       precision::R = .001
                      ) where {V <: AbstractVector, R <: AbstractFloat}
-    len(data) >= 2 || error("data must contain at least 2 elements")
-    n_neighbors <= len(data) - 1 || error("n_neighbors must be 1 less than len(data)=", len(data))
+    length(data) >= 2 || error("data must contain at least 2 elements")
+    n_neighbors <= length(data) - 1 || error("n_neighbors must be 1 less than length(data)=", length(data))
     max_iters >= 1 || error("max_iters must be greater than 0")
     0. < sample_rate ≤ 1. || error("sample_rate must be in (0., 1.]")
     0. ≤ precision ≤ 1. || error("precision must be in [0., 1.]")
