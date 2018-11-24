@@ -8,7 +8,7 @@ Dong, Wei *et al.* Efficient K-Nearest Neighbor Graph Construction for Generic S
 
 ## Usage
 The `DescentGraph` constructor builds the approximate kNN graph:
-```
+```jl
 DescentGraph(data, n_neighbors, metric; max_iters, sample_rate, precision)
 ```
 - `data`: The set of points to build the tree from. This must be of type
@@ -31,7 +31,7 @@ The kNN graph can be accessed through the `graph` attribute. This is a
 `K = n_neighbors` and `N = length(data)`.
 
 Example:
-```
+```jl
 using NNDescent
 data = [rand(10) for _ in 1:1000]
 n_neighbors = 5
@@ -59,7 +59,7 @@ construct the graph.
 `n_neighbors`. Default is `1.`.
 
 Example:
-```
+```jl
 queries = [rand(10) for _ in 1:100]
 idxs, dists = search(knngraph, queries, 4)
 ```
