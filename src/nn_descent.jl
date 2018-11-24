@@ -124,17 +124,21 @@ function _neighbors(graph, sample_rate::AbstractFloat = 1.)
 end
 
 """
-    search(graph::DescentGraph, queries::Vector{V}, n_neighbors, queue_size) -> indices, distances
+    search(graph::DescentGraph, queries::Vector{V}, n_neighbors::Integer, queue_size=1.) -> indices, distances
 
 Search the kNN `graph` for the nearest neighbors of the points in `queries`.
 `queue_size` controls how large the candidate queue should be as a multiple of
-`n_neighbors`. Larger values increase accuracy at the cost of speed, default=1.
+`n_neighbors`. Larger values increase accuracy at the cost of speed.
 """
 function search(graph::DescentGraph,
                 queries::Vector{V},
                 n_neighbors::Integer,
                 queue_size::Real = 1.,
                 ) where {V <: AbstractArray}
+    length(queries) ≥ 1 || error("queries must have at least 1 element")
+    n_neighbors ≥ 1 || error("n_neighbors must be at least 1")
+    queue_size ≥ 1. || error("queue_size must be at least 1.")
+
     max_candidates = trunc(Int, n_neighbors*queue_size)
     Dtype = result_type(graph.metric, queries[1], queries[1])
     candidates = [binary_maxheap(NNTuple{Int, Dtype}) for _ in 1:length(queries)]
@@ -189,7 +193,6 @@ function min_flagged(heap)
     end
     return min_tup
 end
-@inline unexpanded(heap) = sort(filter(x->!x.flag, heap.valtree))
 
 """
     _heappush!(heap::BinaryHeap, tup::NNTuple, max_candidates)
@@ -231,8 +234,7 @@ function _heappush!(heap::AbstractHeap,
 end
 
 """
-Push `tup` onto `heap` without checkout if it already exists in the
-heap.
+Push `tup` onto `heap` without checkout if it already exists in the heap.
 """
 function _unchecked_heappush!(heap::AbstractHeap,
                               tup::NNTuple,
