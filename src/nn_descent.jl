@@ -16,8 +16,9 @@ nearest neighbors. Higher values trade off speed for accuracy. Note that graph
 construction may terminate early if little progress is being made.
 - `sample_rate::AbstractFloat = 1.`: The sample rate for calculating *local joins*
 around each point. Lower values trade off accuracy for speed.
-- `precision::AbstractFloat = .001`: Adjusts the threshold for early termination.
-Lower values trade off speed for accuracy.
+- `precision::AbstractFloat = .001`: The threshold for early termination,
+where precision is "roughly the fraction of true kNN allowed to be missed due to
+early termination". Lower values take longer but return more accurate results.
 """
 function DescentGraph(data::Vector{V},
                       n_neighbors::Integer,
