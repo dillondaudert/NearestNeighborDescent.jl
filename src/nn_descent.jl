@@ -7,19 +7,32 @@ struct DescentGraph{V <: AbstractVector,M,S <: Tuple}
 end
 
 """
-    DescentGraph(data, n_neighbors [, metric = Euclidean()])
+    DescentGraph(data::Vector{V}, n_neighbors::Integer[, metric::SemiMetric = Euclidean()]; <keyword arguments>)
 
-Build an approximate kNN graph of `data` using nearest neighbor descent. 
+Build an approximate kNN graph of `data` using nearest neighbor descent.
+# Arguments
+- `max_iters::Integer = 10`: Limits the number of iterations to refine candidate
+nearest neighbors. Higher values trade off speed for accuracy. Note that graph
+construction may terminate early if little progress is being made.
+- `sample_rate::AbstractFloat = 1.`: The sample rate for calculating *local joins*
+around each point. Lower values trade off accuracy for speed.
+- `precision::AbstractFloat = .001`: Adjusts the threshold for early termination.
+Lower values trade off speed for accuracy.
 """
 function DescentGraph(data::Vector{V},
                       n_neighbors::Integer,
-                      metric::SemiMetric = Euclidean(),
+                      metric::SemiMetric = Euclidean();
                       max_iters::Integer = 10,
                       sample_rate::R = 1.,
                       precision::R = .001
                      ) where {V <: AbstractVector, R <: AbstractFloat}
-    DescentGraph(data, 
-                 metric, 
+    len(data) >= 2 || error("data must contain at least 2 elements")
+    n_neighbors <= len(data) - 1 || error("n_neighbors must be 1 less than len(data)=", len(data))
+    max_iters >= 1 || error("max_iters must be greater than 0")
+    0. < sample_rate ≤ 1. || error("sample_rate must be in (0., 1.]")
+    0. ≤ precision ≤ 1. || error("precision must be in [0., 1.]")
+    DescentGraph(data,
+                 metric,
                  build_graph(data, n_neighbors, metric, max_iters, sample_rate, precision))
 end
 
@@ -32,8 +45,8 @@ function build_graph(data::Vector{V},
                      max_iters::Integer,
                      sample_rate::R,
                      precision::R
-                    ) where {V <: AbstractArray, 
-                             M <: SemiMetric, 
+                    ) where {V <: AbstractArray,
+                             M <: SemiMetric,
                              R <: AbstractFloat}
 
     np = length(data)
@@ -132,7 +145,7 @@ function search(graph::DescentGraph,
         d = evaluate(graph.metric, queries[i], graph.data[j])
         _heappush!(candidates[i], NNTuple(j, d, false), max_candidates)
         seen[j] = true
-        
+
         while true
             unexp = min_flagged(candidates[i])
             if unexp.idx == -1
@@ -143,10 +156,10 @@ function search(graph::DescentGraph,
             for t in graph.graph[:,unexp.idx]
                 if !seen[t[1]]
                     seen[t[1]] = true
-                    d = evaluate(graph.metric, 
-                                 queries[i], 
+                    d = evaluate(graph.metric,
+                                 queries[i],
                                  graph.data[t[1]])
-                    _unchecked_heappush!(candidates[i], 
+                    _unchecked_heappush!(candidates[i],
                                          NNTuple(t[1], d, false),
                                          max_candidates)
                 end
@@ -154,7 +167,7 @@ function search(graph::DescentGraph,
         end
     end
     knn_graph = [[pop!(candidates[i]) for _ in 1:length(candidates[i])][end:-1:end-(n_neighbors-1)]
-                 for i in 1:length(candidates)]   
+                 for i in 1:length(candidates)]
     ids = Array{Int}(undef, (n_neighbors, length(queries)))
     dists = Array{Dtype}(undef, (n_neighbors, length(queries)))
 
@@ -239,7 +252,7 @@ function _unchecked_heappush!(heap::AbstractHeap,
         return 1
     end
     return 0
-                        
+
 end
 
 @inline function _push_or_update!(h::MutableBinaryHeap, t, maxc)
