@@ -45,7 +45,7 @@ knngraph.graph[k,n] # = (id, dist)
 
 Once constructed, the `DescentGraph` can be used to find the nearest
 neighbors to new points. This is done via the `search` method:
-```
+```jl
 search(graph, queries, n_neighbors, queue_size) -> indices, distances
 ```
 - `graph`: An instance of `DescentGraph`
