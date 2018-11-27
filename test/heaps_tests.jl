@@ -22,7 +22,6 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax
         @testset "heapmin tests" begin
             @test heapmin([1]) == 1
             @test heapmin([1, 2]) == 1
-            @test_throws heapmin([])
             for i = 1:20
                 A = rand(50)
                 minmax_heapify!(A)
@@ -33,7 +32,6 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax
             @test heapmax([1]) == 1
             @test heapmax([1, 2]) == 2
             @test heapmax([1, 3, 2]) == 3
-            @test_throws heapmax([])
             for i = 1:20
                 A = rand(50)
                 minmax_heapify!(A)
