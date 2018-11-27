@@ -32,6 +32,7 @@ function bubbleup!(A::AbstractVector, i::Integer)
         else
             # bubble up max
             bubbleup!(A, i, Reverse)
+        end
     end
    return 
 end
