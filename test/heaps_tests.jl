@@ -1,5 +1,5 @@
 # tests for min-max heaps
-using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!
+using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!, mm_heappush!
 
 @testset "minmax heaps tests" begin
 
@@ -79,6 +79,27 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
                 @test heapmax(A) == maximum(A)
             end
         end
+    end
+    
+    @testset "mm_heappush! tests" begin
+        A = []
+        mm_heappush!(A, 1)
+        @test A[1] == 1
+        mm_heappush!(A, 2)
+        @test is_minmax_heap(A)
+        mm_heappush!(A, 10)
+        @test is_minmax_heap(A)
+        mm_heappush!(A, rand(Int)))
+        @test is_minmax_heap(A)
+        for i = 1:5
+            A = rand(20)
+            minmax_heapify!(A)
+            for j = 1:4
+                mm_heappush!(A, rand(Int))
+                @test is_minmax_heap(A)
+            end
+        end
+            
     end
 
 end

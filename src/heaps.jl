@@ -2,6 +2,53 @@
 
 using Base.Order: lt, Ordering, Forward, Reverse
 
+function mm_heappush!(A::AbstractVector, x)
+    push!(A, x)
+    bubbleup!(A, length(A))
+end
+
+function bubbleup!(A::AbstractVector, i::Integer)
+    if level(i) % 2 == 0
+        # min level
+        if i > 0 && A[i] > A[hparent(i)]
+            # swap to parent and bubble up max
+            tmp = A[i]
+            A[i] = A[hparent(i)]
+            A[hparent(i)] = tmp
+            bubbleup!(A, hparent(i), Reverse)
+        else
+            # bubble up min
+            bubbleup!(A, i, Forward)
+        end
+        
+    else
+        # max level
+        if i > 0 && A[i] < A[hparent(i)]
+            # swap to parent and bubble up min
+            tmp = A[i]
+            A[i] = A[hparent(i)]
+            A[hparent(i)] = tmp
+            bubbleup!(A, hparent(i), Forward)
+        else
+            # bubble up max
+            bubbleup!(A, i, Reverse)
+    end
+   return 
+end
+
+function bubbleup!(A::AbstractVector, i::Integer, o::Ordering, x=A[i])
+    gparent = hparent(hparent(i))
+    if i != hparent(i) != gparent
+        # i has grandparent
+        if lt(o, x, A[gparent])
+            A[i] = A[gparent]
+            A[gparent] = x
+            bubbleup!(A, gparent, o)
+        end
+    end
+    return          
+end
+
 function heappop_min!(A::AbstractVector)
     x = A[1]
     y = pop!(A)
