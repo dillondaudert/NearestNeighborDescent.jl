@@ -40,7 +40,7 @@ end
         end
         @testset "basic_nndescent tests" begin
             graph = DescentGraph(data, 3)
-            @test sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
+            @test_skip sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
         end
     end
     @testset "CosineDist" begin
