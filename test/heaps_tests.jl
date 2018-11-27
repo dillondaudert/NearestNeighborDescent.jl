@@ -89,7 +89,7 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
         @test is_minmax_heap(A)
         mm_heappush!(A, 10)
         @test is_minmax_heap(A)
-        mm_heappush!(A, rand(Int)))
+        mm_heappush!(A, rand(Int))
         @test is_minmax_heap(A)
         for i = 1:5
             A = rand(20)
