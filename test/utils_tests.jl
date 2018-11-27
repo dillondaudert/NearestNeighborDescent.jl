@@ -1,3 +1,4 @@
+using NearestNeighborDescent: sample_neighbors, make_knn_heaps
 
 @testset "sample neighbors tests" begin
     @testset "sample_rate = 1. tests" begin
@@ -5,16 +6,16 @@
         n_neighbors = 4
 
         # zero neighbors
-        idxs = NNDescent.sample_neighbors(length(points), 0)
+        idxs = sample_neighbors(length(points), 0)
         @test length(idxs) == 0
 
         # k < n
-        idxs = NNDescent.sample_neighbors(length(points), n_neighbors)
+        idxs = sample_neighbors(length(points), n_neighbors)
         @test length(idxs) == n_neighbors
         @test issubset(idxs, points)
 
         # k > n
-        idxs = NNDescent.sample_neighbors(length(points), length(points)+5)
+        idxs = sample_neighbors(length(points), length(points)+5)
         @test length(idxs) == length(points)
     end
     @testset "sample_rate = .5 tests" begin
@@ -23,30 +24,30 @@
         ρ = .5
 
         # zero neighbors
-        idxs = NNDescent.sample_neighbors(length(points), 0, ρ)
+        idxs = sample_neighbors(length(points), 0, ρ)
         @test length(idxs) == 0
 
         # k < n
-        idxs = NNDescent.sample_neighbors(length(points), n_neighbors, ρ)
+        idxs = sample_neighbors(length(points), n_neighbors, ρ)
         @test ρ*n_neighbors ≥ length(idxs)
         @test issubset(idxs, points)
 
         # k > n
-        idxs = NNDescent.sample_neighbors(length(points), 2*length(points), ρ)
+        idxs = sample_neighbors(length(points), 2*length(points), ρ)
         @test length(idxs) == length(points)
     end
     @testset "exclude set tests" begin
         points = collect(1:10)
 
         # exclude 1
-        idxs = NNDescent.sample_neighbors(length(points),
+        idxs = sample_neighbors(length(points),
                                           length(points),
                                           exclude=[1])
         @test idxs ⊊ points
         @test !(1 ∈ idxs)
 
         # exclude all
-        idxs = NNDescent.sample_neighbors(length(points),
+        idxs = sample_neighbors(length(points),
                                           length(points),
                                           exclude=points)
         @test length(idxs) == 0
@@ -59,7 +60,7 @@ end
         data = [rand(3) for _ in 1:10]
         n_neighbors = 3
 
-        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Euclidean())
+        knn_heaps = make_knn_heaps(data, n_neighbors, Euclidean())
 
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
@@ -75,7 +76,7 @@ end
     @testset "Int tests" begin
         data = [rand([0, 1], 3) for _ in 1:10]
         n_neighbors = 2
-        knn_heaps = NNDescent.make_knn_heaps(data, n_neighbors, Hamming())
+        knn_heaps = make_knn_heaps(data, n_neighbors, Hamming())
 
         @test length(knn_heaps) == length(data)
         for p in 1:length(knn_heaps)
