@@ -99,7 +99,14 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
                 @test is_minmax_heap(A)
             end
         end
-            
+    end
+
+    @testset "mm_klargest tests" begin
+        A = rand(50)
+        sorted_A = sort(A)
+        minmax_heapify!(A)
+        @test mm_ksmallest(A, 50) == sorted_A
+        @test mm_klargest(A, 50) == sorted_A[end:-1:1]
     end
 
 end

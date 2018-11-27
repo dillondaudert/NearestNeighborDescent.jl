@@ -2,6 +2,9 @@
 
 using Base.Order: lt, Ordering, Forward, Reverse
 
+@inline mm_klargest(A::AbstractVector, k::Integer) = [heappop_max!(A) for _ in 1:min(length(A), k)]
+@inline mm_ksmallest(A::AbstractVector, k::Integer) = [heappop_min!(A) for _ in 1:min(length(A), k)]
+
 function mm_heappush!(A::AbstractVector, x)
     push!(A, x)
     bubbleup!(A, length(A))
@@ -175,3 +178,4 @@ function is_minmax_heap(A::AbstractVector)
     end
     isheap
 end
+                        
