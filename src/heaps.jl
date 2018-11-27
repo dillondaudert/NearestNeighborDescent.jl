@@ -2,6 +2,26 @@
 
 using Base.Order: lt, Ordering, Forward, Reverse
 
+function heappop_min!(A::AbstractVector)
+    x = A[1]
+    y = pop!(A)
+    if !isempty(A)
+        A[1] = y
+        trickledown!(A, 1)
+    end
+    return x
+end
+
+function heappop_max!(A::AbstractVector)
+    x, i = maximum([(A[j], j) for j in 1:min(length(A), 3)])
+    y = pop!(A)
+    if !isempty(A)
+        A[i] = y
+        trickledown!(A, i)
+    end
+    return x    
+end
+
 @inline heapmin(A::AbstractVector) = A[1]
 @inline function heapmax(A::AbstractVector)
     maxlen = min(length(A), 3)

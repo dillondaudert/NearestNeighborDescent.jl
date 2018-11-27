@@ -1,5 +1,5 @@
 # tests for min-max heaps
-using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax
+using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!
 
 @testset "minmax heaps tests" begin
 
@@ -35,6 +35,47 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax
             for i = 1:20
                 A = rand(50)
                 minmax_heapify!(A)
+                @test heapmax(A) == maximum(A)
+            end
+        end
+    end
+    
+    @testset "heappop tests" begin
+        @testset "heappop_min tests" begin
+            A = [1]
+            @test heappop_min!(A) == 1
+            @test length(A) == 0
+            A = [1, 3, 2]
+            @test heappop_min!(A) == 1
+            @test length(A) == 2
+            @test is_minmax_heap(A)
+            @test heapmin(A) == minimum(A) == 2
+            for i = 1:20
+                A = rand(50)
+                minmax_heapify!(A)
+                minval = minimum(A)
+                @test heappop_min!(A) == minval
+                @test length(A) == 49
+                @test is_minmax_heap(A)
+                @test heapmin(A) == minimum(A)
+            end
+        end
+        @testset "heappop_max tests" begin
+            A = [1]
+            @test heappop_max!(A) == 1
+            @test length(A) == 0
+            A = [1, 3, 2]
+            @test heappop_max!(A) == 3
+            @test length(A) == 2
+            @test is_minmax_heap(A)
+            @test heapmax(A) == maximum(A) == 2
+            for i = 1:20
+                A = rand(50)
+                minmax_heapify!(A)
+                maxval = maximum(A)
+                @test heappop_max!(A) == maxval
+                @test length(A) == 49
+                @test is_minmax_heap(A)
                 @test heapmax(A) == maximum(A)
             end
         end
