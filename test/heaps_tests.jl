@@ -1,5 +1,5 @@
 # tests for min-max heaps
-using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!, mm_heappush!, mm_klargest, mm_ksmallest
+using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!, mm_heappush!, mm_klargest!, mm_ksmallest!
 
 @testset "minmax heaps tests" begin
 
@@ -105,8 +105,11 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
         A = rand(Int, 50)
         sorted_A = sort(A)
         minmax_heapify!(A)
-        @test mm_ksmallest(A, 50) == sorted_A
-        @test mm_klargest(A, 50) == sorted_A[end:-1:1]
+        @test mm_ksmallest!(A, 50) == sorted_A
+        A = rand(Int, 50)
+        sorted_A = sort(A)
+        minmax_heapify!(A)
+        @test mm_klargest!(A, 50) == sorted_A[end:-1:1]
     end
 
 end
