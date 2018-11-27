@@ -10,7 +10,7 @@ end
 function bubbleup!(A::AbstractVector, i::Integer)
     if level(i) % 2 == 0
         # min level
-        if i > 0 && A[i] > A[hparent(i)]
+        if i > 1 && A[i] > A[hparent(i)]
             # swap to parent and bubble up max
             tmp = A[i]
             A[i] = A[hparent(i)]
@@ -23,7 +23,7 @@ function bubbleup!(A::AbstractVector, i::Integer)
         
     else
         # max level
-        if i > 0 && A[i] < A[hparent(i)]
+        if i > 1 && A[i] < A[hparent(i)]
             # swap to parent and bubble up min
             tmp = A[i]
             A[i] = A[hparent(i)]
@@ -39,7 +39,7 @@ end
 
 function bubbleup!(A::AbstractVector, i::Integer, o::Ordering, x=A[i])
     gparent = hparent(hparent(i))
-    if i != hparent(i) != gparent
+    if i > hparent(i) > gparent >= 1
         # i has grandparent
         if lt(o, x, A[gparent])
             A[i] = A[gparent]
