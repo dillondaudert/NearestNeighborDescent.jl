@@ -8,6 +8,6 @@ include("utils.jl")
 include("nn_descent.jl")
 include("brute_knn.jl")
 
-export DescentGraph, search, is_minmax_heap, minmax_heapify!
+export DescentGraph, search
 
 end # module
