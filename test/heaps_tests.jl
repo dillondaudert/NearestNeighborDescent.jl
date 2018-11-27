@@ -1,5 +1,5 @@
 # tests for min-max heaps
-using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!, mm_heappush!
+using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax, heappop_min!, heappop_max!, mm_heappush!, mm_klargest, mm_ksmallest
 
 @testset "minmax heaps tests" begin
 
