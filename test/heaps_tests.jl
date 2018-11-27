@@ -102,7 +102,7 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
     end
 
     @testset "mm_klargest tests" begin
-        A = rand(50)
+        A = rand(Int, 50)
         sorted_A = sort(A)
         minmax_heapify!(A)
         @test mm_ksmallest(A, 50) == sorted_A
