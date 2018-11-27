@@ -2,24 +2,30 @@
 
 using Base.Order: lt, Ordering, Forward, Reverse
 
+@inline heapmin(A::AbstractVector) = A[1]
+@inline function heapmax(A::AbstractVector)
+    maxlen = min(length(A), 3)
+    els = [A[i] for i in 1:maxlen]
+    return maximum(els)
+end
+
 function minmax_heapify!(A::AbstractVector)
     for i = length(A):-1:1
         trickledown!(A, i)
     end
-    A
+    return
 end
 
 """
 
 """
 function trickledown!(A::AbstractVector, i::Integer)
-
     if level(i) % 2 == 0
         trickledown!(A, i, Forward)
     else
         trickledown!(A, i, Reverse)
     end
-
+    return
 end
 
 function trickledown!(A::AbstractVector, i::Integer, o::Ordering, x=A[i])
