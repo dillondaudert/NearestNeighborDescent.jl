@@ -64,13 +64,11 @@ end
 Return the indices of all children and grandchildren of
 position `i`.
 """
-function descendants(N::T, i::T) where {T}
-    children = [lchild(i), rchild(i)]
-    grandchildren = T[]
-    for child in children
-        append!(grandchildren, [lchild(child), rchild(child)])
+function descendants(N::T, i::T) where {T <: Integer}
+    _descendants = T[]
+    for child in children(i)
+        append!(_descendants, [child, lchild(child), rchild(child)])
     end
-    _descendants = vcat(children, grandchildren)
     return [d for d in _descendants if d ≤ N]
 end
 
