@@ -1,4 +1,4 @@
-name = "NNDescent"
+name = "NearestNeighborDescent"
 uuid = "1dd1f7d0-b91d-11e8-266b-d34208f3077b"
 authors = ["Dillon Daudert <dillongdaudert@gmail.com>"]
 version = "0.1.0"

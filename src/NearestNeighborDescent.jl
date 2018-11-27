@@ -1,4 +1,4 @@
-module NNDescent
+module NearestNeighborDescent
 
 using Distances: SemiMetric, Euclidean, evaluate, result_type
 using DataStructures

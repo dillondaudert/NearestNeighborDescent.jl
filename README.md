@@ -1,6 +1,6 @@
-# NNDescent.jl
+# NearestNeighborDescent.jl
 
-[![Build Status](https://travis-ci.com/dillondaudert/NNDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NNDescent.jl) [![codecov](https://codecov.io/gh/dillondaudert/NNDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NNDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NNDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NNDescent.jl?branch=master)
+[![Build Status](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl) [![codecov](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master)
 
 Julia implementation of the nearest neighbor descent algorithm described in:
 
@@ -32,7 +32,7 @@ The kNN graph can be accessed through the `graph` attribute. This is a
 
 Example:
 ```jl
-using NNDescent
+using NearestNeighborDescent
 data = [rand(10) for _ in 1:1000]
 n_neighbors = 5
 

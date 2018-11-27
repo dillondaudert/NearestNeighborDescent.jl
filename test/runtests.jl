@@ -1,6 +1,6 @@
 # tests
-using NNDescent
-using NNDescent: NNTuple, _neighbors, brute_knn, _heappush!
+using NearestNeighborDescent
+using NearestNeighborDescent: NNTuple, _neighbors, brute_knn, _heappush!
 using DataStructures
 using Distances
 using Test
