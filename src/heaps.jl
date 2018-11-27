@@ -66,7 +66,7 @@ end
 function heappop_max!(A::AbstractVector)
     x, i = maximum([(A[j], j) for j in 1:min(length(A), 3)])
     y = pop!(A)
-    if !isempty(A)
+    if !isempty(A) && i <= length(A)
         A[i] = y
         trickledown!(A, i)
     end

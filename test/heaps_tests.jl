@@ -64,6 +64,10 @@ using NearestNeighborDescent: is_minmax_heap, minmax_heapify!, heapmin, heapmax,
             A = [1]
             @test heappop_max!(A) == 1
             @test length(A) == 0
+            A = [1, 2, 3]
+            @test heappop_max!(A) == 3
+            @test length(A) == 2
+            @test is_minmax_heap(A)
             A = [1, 3, 2]
             @test heappop_max!(A) == 3
             @test length(A) == 2
