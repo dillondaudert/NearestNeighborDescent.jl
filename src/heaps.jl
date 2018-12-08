@@ -1,4 +1,5 @@
 using Base.Order: lt, Ordering, Forward, Reverse, ForwardOrdering, ReverseOrdering
+import Base: length, isempty, empty!, push!, pop!, min, max, top
 
 ################################################
 #
