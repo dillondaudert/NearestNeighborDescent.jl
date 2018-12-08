@@ -50,7 +50,7 @@ using Base.Order: Forward, Reverse
                 hs = binary_minmax_heap(A)
                 for j = 1:4
                     push!(hs, rand())
-                    @test is_minmax_heap(hs)
+                    @test is_minmax_heap(hs.valtree)
                 end
             end
         end
