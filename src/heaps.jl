@@ -23,7 +23,7 @@ mutable struct BinaryMinMaxHeap{T} <: AbstractMinMaxHeap{T}
     end
 end
 
-binary_minmax_heap(vt::T) where {T} = BinaryMinMaxHeap{T}()
+binary_minmax_heap(vt::Type{T}) where {T} = BinaryMinMaxHeap{T}()
 binary_minmax_heap(xs::AbstractVector{T}) where {T} = BinaryMinMaxHeap{T}(xs) 
 
 
@@ -148,7 +148,7 @@ function descendants(N::T, i::T) where {T <: Integer}
 end
 
 """
-    is_minmax_heap(A::AbstractVector) -> Bool
+    is_minmax_heap(h::AbstractVector) -> Bool
 
 Return `true` if `A` is a min-max heap. A min-max heap is a
 heap where the minimum element is the root and the maximum
