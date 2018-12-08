@@ -122,4 +122,14 @@ using Base.Order: Forward, Reverse
             @test !isempty(h)
         end
     end
+    
+    @testset "type conversion" begin
+        h = binary_minmax_heap(Float64)
+        push!(h, 3.)
+        push!(h, 5)
+        push!(h, Rational(4, 8))
+        push!(h, Complex(10.1, 0.0))
+        
+        @test h.valtree == [0.5, 10.1, 3.0, 5.0]
+    end
 end
