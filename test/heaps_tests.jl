@@ -20,7 +20,7 @@ using Base.Order: Forward, Reverse
             @test !isempty(h)
             @test top(h) == min(h) == 1
             @test max(h) == 20
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
         end
         
         @testset "make from random arrays tests" begin
@@ -40,11 +40,11 @@ using Base.Order: Forward, Reverse
             push!(h, 1)
             @test top(h) == 1
             push!(h, 2)
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             push!(h, 10)
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             push!(h, rand(Int))
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             for i = 1:5
                 A = rand(20)
                 hs = binary_minmax_heap(A)
@@ -65,7 +65,7 @@ using Base.Order: Forward, Reverse
             h = binary_minmax_heap([1, 3, 2])
             @test popmin!(h) == 1
             @test length(h) == 2
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             @test min(h) == 2
             for i = 1:20
                 A = rand(50)
@@ -73,7 +73,7 @@ using Base.Order: Forward, Reverse
                 minval = minimum(A)
                 @test popmin!(h) == minval
                 @test length(h) == 49
-                @test is_minmax_heap(h)
+                @test is_minmax_heap(h.valtree)
             end
         end
         @testset "popmax! tests" begin
@@ -84,12 +84,12 @@ using Base.Order: Forward, Reverse
             h = binary_minmax_heap([1, 2, 3])
             @test popmax!(h) == 3
             @test length(h) == 2
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             @test max(h) == 2
             h = binary_minmax_heap([1, 3, 2])
             @test popmax!(h) == 3
             @test length(h) == 2
-            @test is_minmax_heap(h)
+            @test is_minmax_heap(h.valtree)
             @test max(h) == 2
         end
     end
