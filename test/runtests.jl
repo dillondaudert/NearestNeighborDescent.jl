@@ -7,4 +7,3 @@ using Test
 
 include("utils_tests.jl")
 include("nndescent_tests.jl")
-include("heaps_tests.jl")
