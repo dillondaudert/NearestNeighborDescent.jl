@@ -1,5 +1,5 @@
-using NNDescent
-using NNDescent: brute_knn, brute_search, NNTuple
+using NearestNeighborDescent
+using NearestNeighborDescent: brute_knn, brute_search
 using BenchmarkTools
 using Distances
 using PkgBenchmark
