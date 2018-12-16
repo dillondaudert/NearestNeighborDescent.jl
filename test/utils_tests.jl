@@ -111,6 +111,7 @@ end
         @test fw[3] == [2, 4]
         @test fw[4] == [1]
         @test fw[5] == [3, 4]
+        @test all(isempty(v) for v in old_fw)
     end
     @testset "new bw neighbors tests" begin
         @test bw[1] == [4]
@@ -118,6 +119,7 @@ end
         @test bw[3] == [5]
         @test bw[4] == [2, 3, 5]
         @test bw[5] == [1]
+        @test all(isempty(v) for v in old_bw)
     end
     old_fw, fw, old_bw, bw = _neighbors(knn_heaps)
     @testset "old fw neighbors tests" begin
@@ -126,6 +128,7 @@ end
         @test old_fw[3] == [2, 4]
         @test old_fw[4] == [1]
         @test old_fw[5] == [3, 4]
+        @test all(isempty(v) for v in fw)
     end
     @testset "old bw neighbors tests" begin
         @test old_bw[1] == [4]
@@ -133,6 +136,7 @@ end
         @test old_bw[3] == [5]
         @test old_bw[4] == [2, 3, 5]
         @test old_bw[5] == [1]
+        @test all(isempty(v) for v in bw)
     end
 end
 
