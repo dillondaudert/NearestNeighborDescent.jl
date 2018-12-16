@@ -7,6 +7,9 @@ _recall(π, πₜ) = length(intersect(π, πₜ))/length(πₜ)
 rand_data = [rand(100) for _ in 1:5000]
 rand_queries = [rand(100) for _ in 1:500]
 
+ham_data = [rand([0, 1], 800) for _ in 1:5000]
+ham_queries = [rand([0, 1], 800) for _ in 1:500]
+
 reshape_mnist(data) = reshape(data, size(data)[1]*size(data)[2], size(data)[3])
 
 FMNIST_train, _ = FashionMNIST.traindata()
