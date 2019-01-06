@@ -48,7 +48,7 @@ function DescentGraph(data::AbstractMatrix,
                       precision::AbstractFloat = 0.001
                      )
     data_vectors = [@view data[:, i] for i in 1:size(data, 2)]
-    DescentGraph(data_vectors, n_neighbors, metric, max_iters, sample_rate, precision)
+    DescentGraph(data_vectors, n_neighbors, metric; max_iters=max_iters, sample_rate=sample_rate, precision=precision)
 end
 
 """
