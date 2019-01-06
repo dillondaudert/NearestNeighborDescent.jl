@@ -1,6 +1,6 @@
 
 @testset "DescentGraph tests" begin
-    @testset "Constructor tests" begin
+    @testset "Vector{Vector} constructor tests" begin
         data = [[0., 0.],
                 [0., 1.]]
         graph = DescentGraph(data, 1)
@@ -13,6 +13,10 @@
             graph = DescentGraph(data, k)
             @test size(graph.graph) == (k, np)
         end
+    end
+    @testset "Matrix constructor tests" begin
+        data = [0. 0.; 0. 1.]
+        @test DescentGraph(data, 1) isa DescentGraph
     end
 end
 
@@ -77,4 +81,11 @@ end
     inds, dists = search(graph, queries, 2, 4)
     @test all(inds .== true_inds)
     @test all(dists .== true_dists)
+    
+    @testset "search matrix queries tests" begin
+        queries = [0. 0.; 0. 1.; 0.4 0.4]
+        inds, dists = search(graph, queries, 2, 4)
+        @test all(inds .== true_inds)
+        @test all(dists .== true_dists)
+    end
 end

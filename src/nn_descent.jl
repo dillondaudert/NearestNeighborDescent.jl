@@ -25,7 +25,7 @@ function DescentGraph(data::Vector{V},
                       metric::SemiMetric = Euclidean();
                       max_iters::Integer = 10,
                       sample_rate::R = 1.,
-                      precision::R = .001
+                      precision::R = 0.001
                      ) where {V <: AbstractVector, R <: AbstractFloat}
     length(data) >= 2 || error("data must contain at least 2 elements")
     n_neighbors <= length(data) - 1 || error("n_neighbors must be 1 less than length(data)=", length(data))
@@ -35,6 +35,20 @@ function DescentGraph(data::Vector{V},
     DescentGraph(data,
                  metric,
                  build_graph(data, n_neighbors, metric, max_iters, sample_rate, precision))
+end
+
+"""
+    DescentGraph(data::AbstractMatrix, n_neighbors::Integer[, metric::SemiMetric = Euclidean()]; <keyword arguments>)
+"""
+function DescentGraph(data::AbstractMatrix,
+                      n_neighbors::Integer,
+                      metric::SemiMetric = Euclidean();
+                      max_iters::Integer = 10,
+                      sample_rate::AbstractFloat = 1.,
+                      precision::AbstractFloat = 0.001
+                     )
+    data_vectors = [@view data[:, i] for i in 1:size(data, 2)]
+    DescentGraph(data_vectors, n_neighbors, metric, max_iters, sample_rate, precision)
 end
 
 """
@@ -150,11 +164,21 @@ function search(graph::DescentGraph,
     ids = Array{Int}(undef, (n_neighbors, length(queries)))
     dists = Array{Dtype}(undef, (n_neighbors, length(queries)))
 
-    for i = 1:length(queries)
-        for j in 1:n_neighbors
-            ids[j, i] = knn_graph[i][j].idx
-            dists[j, i] = knn_graph[i][j].dist
-        end
+    for i = 1:length(queries), j in 1:n_neighbors
+        ids[j, i] = knn_graph[i][j].idx
+        dists[j, i] = knn_graph[i][j].dist
     end
     return ids, dists
+end
+
+"""
+    search(graph::DescentGraph, queries::AbstractMatrix, n_neighbors::Integer, queue_size::Real = 1.)
+"""
+function search(graph::DescentGraph,
+                queries::AbstractMatrix,
+                n_neighbors::Integer,
+                queue_size::Real = 1.,
+                )
+    queries_array = [@view queries[:, i] for i in 1:size(queries, 2)]
+    search(graph, queries_array, n_neighbors, queue_size)
 end
