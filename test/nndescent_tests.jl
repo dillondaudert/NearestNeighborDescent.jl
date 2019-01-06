@@ -18,7 +18,18 @@
         data = [0. 0.; 0. 1.]
         @test DescentGraph(data, 1) isa DescentGraph
     end
+    @testset "eltype stability tests" begin
+        # Float32
+        data = [rand(Float32, 10) for _ in 1:100]
+        graph = DescentGraph(data, 5)
+        @test eltype(graph.graph) <: Tuple{Int, Float32}
+        # Integer
+        data = [rand([0, 1], 10) for _ in 1:100]
+        graph = DescentGraph(data, 5, Hamming())
+        @test eltype(graph.graph) <: Tuple{Int, Int}
+    end
 end
+
 
 @testset "Distances tests" begin
     @testset "Euclidean" begin
@@ -88,4 +99,6 @@ end
         @test all(inds .== true_inds)
         @test all(dists .== true_dists)
     end
+    
+    
 end
