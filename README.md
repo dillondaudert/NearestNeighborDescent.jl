@@ -49,9 +49,9 @@ neighbors to new points. This is done via the `search` method:
 search(graph, queries, n_neighbors, queue_size) -> indices, distances
 ```
 - `graph`: An instance of `DescentGraph`
-- `queries`: A vector of new data points of type `Vector{V}`. Note that the
-dimensionality of the queries should match that of the data used to originally
-construct the graph.
+- `queries`: A vector of new data points of type `Vector{V}` or `AbstractMatrix`. 
+Note that the dimensionality of the queries should match that of the data used to 
+originally construct the graph.
 - `n_neighbors`: The number of neighbors to find for each query. This does
 *not* have to be the same as the number used to construct `graph`.
 - `queue_size`: Each query maintains a heap of candidate neighbors.
