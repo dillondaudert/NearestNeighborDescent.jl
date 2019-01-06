@@ -12,7 +12,7 @@ The `DescentGraph` constructor builds the approximate kNN graph:
 DescentGraph(data, n_neighbors, metric; max_iters, sample_rate, precision)
 ```
 - `data`: The set of points to build the tree from. This must be of type
-`Vector{V}`, where `V <: AbstractVector`.
+`Vector{V}`, where `V <: AbstractVector` **or** `AbstractMatrix`.
 - `n_neighbors`: An integer specifies the number of neighbors to find
 - `metric`: Any metric `M` where `M <: SemiMetric` from the Distances.jl package. Default is `Euclidean()`.
 
