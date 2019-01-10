@@ -21,8 +21,14 @@ function sample_neighbors(npoints::Int,
                           exclude::Vector{Int} = Vector{Int}()) where {R <: AbstractFloat}
     # num neighbors to sample = max(ρK, N)
     last = min(npoints-length(exclude), trunc(Int, sample_rate*n_neighbors))
-    idx_gen = Iterators.take((i for i ∈ randperm(npoints) if i ∉ exclude), last)
-    return collect(idx_gen)
+    ids = Set{Int}()
+    while length(ids) < last
+        k = (abs(rand(Int)) % npoints) + 1
+        if k ∉ exclude 
+            union!(ids, k)
+        end
+    end
+    return collect(ids)
 end
 
 function make_knn_heaps(data::Vector{V},
