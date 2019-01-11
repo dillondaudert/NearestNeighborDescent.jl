@@ -94,7 +94,7 @@ end
 
 @testset "neighbors tests" begin
     # create heaps
-    knn_heaps = [mutable_binary_maxheap(NNTuple{Int, Float64}) for _ in 1:5]
+    knn_heaps = [MutableBinaryMaxHeap{NNTuple{Int, Float64}}() for _ in 1:5]
     push!(knn_heaps[1], NNTuple(2, Inf))
     push!(knn_heaps[1], NNTuple(5, Inf))
     push!(knn_heaps[2], NNTuple(4, Inf))
@@ -143,7 +143,7 @@ end
 @testset "_heappush! tests" begin
     @testset "immutable heap tests" begin
         @testset "max_cand tests" begin
-            h = binary_maxheap(NNTuple{Int, Float64})
+            h = BinaryMaxHeap{NNTuple{Int, Float64}}()
             t = NNTuple(1, 1.)
             _heappush!(h, t, 0)
             @test length(h) == 0
@@ -159,7 +159,7 @@ end
         end
 
         @testset "return val tests" begin
-            h = binary_maxheap(NNTuple{Int, Float64})
+            h = BinaryMaxHeap{NNTuple{Int, Float64}}()
             # max_cand
             @test _heappush!(h, NNTuple(1, rand()), 0) == 0
             # empty heap push
@@ -184,7 +184,7 @@ end
     end
     @testset "mutable heap tests" begin
         @testset "no changes tests" begin
-            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            v_knn = MutableBinaryMaxHeap{NNTuple{Int, Float64}}()
             push!(v_knn, NNTuple(1, 10.))
             push!(v_knn, NNTuple(2, 20.))
             push!(v_knn, NNTuple(3, 30.))
@@ -194,7 +194,7 @@ end
             @test top(v_knn).dist == 30.
         end
         @testset "exists tests" begin
-            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            v_knn = MutableBinaryMaxHeap{NNTuple{Int, Float64}}()
             push!(v_knn, NNTuple(1, 10.))
             push!(v_knn, NNTuple(2, 20.))
             push!(v_knn, NNTuple(3, Inf))
@@ -206,7 +206,7 @@ end
             @test _heappush!(v_knn, NNTuple(3, 5.)) == 0
         end
         @testset "new nearest neighbor tests" begin
-            v_knn = mutable_binary_maxheap(NNTuple{Int, Float64})
+            v_knn = MutableBinaryMaxHeap{NNTuple{Int, Float64}}()
             push!(v_knn, NNTuple(1, 10.))
             push!(v_knn, NNTuple(2, 20.))
             push!(v_knn, NNTuple(3, 30.))
