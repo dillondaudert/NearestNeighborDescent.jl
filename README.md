@@ -1,6 +1,7 @@
 # NearestNeighborDescent.jl
 
-[![Build Status](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl) [![codecov](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master)
+[![Build Status](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl) [![Build status](https://ci.appveyor.com/api/projects/status/lr49p9vxkr8a3uv0?svg=true)](https://ci.appveyor.com/project/dillondaudert/nearestneighbordescent-jl)
+ [![codecov](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master)
 
 Julia implementation of the nearest neighbor descent algorithm described in:
 
