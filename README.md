@@ -5,7 +5,7 @@
 
 Julia implementation of the nearest neighbor descent algorithm described in:
 
-Dong, Wei *et al.* Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures. *WWW* (2011).
+> Dong, Wei *et al.* Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures. *WWW* (2011).
 
 ## Usage
 The `DescentGraph` constructor builds the approximate kNN graph:
@@ -27,21 +27,23 @@ that each candidate be included in the local join for an iteration. Default is
 - `precision`: This argument roughly corresponds to the fraction of true
 nearest neighbors that will be missed by the algorithm. Default `.001`.
 
-The kNN graph can be accessed through the `graph` attribute. This is a
-`KxN` matrix containing tuples of ids and distances to the neighbors, where
-`K = n_neighbors` and `N = length(data)`.
+The k-nearest neighbors can be accessed through the `indices` and `distances`
+attributes. These are both `KxN` matrices containing ids and distances to each
+point's neighbors, respectively, where `K = n_neighbors` and `N = length(data)`.
 
 Example:
 ```jl
 using NearestNeighborDescent
 data = [rand(10) for _ in 1:1000]
+# OR data = rand(10, 1000)
 n_neighbors = 5
 
 # nn descent search
-knngraph = DescentGraph(data, n_neighbors)
+graph = DescentGraph(data, n_neighbors)
 
-# access nearest neighbors
-knngraph.graph[k,n] # = (id, dist)
+# access point i's jth nearest neighbor:
+graph.indices[j, i]
+graph.distances[j, i]
 ```
 
 Once constructed, the `DescentGraph` can be used to find the nearest
@@ -59,8 +61,12 @@ originally construct the graph.
 `queue_size` controls the maximum number of candidates as a multiple of
 `n_neighbors`. Default is `1.`.
 
+Similar to `DescentGraph`, this returns two matrices for the indices and
+distances to the nearest neighbors of each query.
+
 Example:
 ```jl
 queries = [rand(10) for _ in 1:100]
+# OR queries = rand(10, 100)
 idxs, dists = search(knngraph, queries, 4)
 ```
