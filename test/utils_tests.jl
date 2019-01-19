@@ -1,4 +1,30 @@
-using NearestNeighborDescent: sample_neighbors, make_knn_heaps
+using NearestNeighborDescent: sample_neighbors, make_knn_heaps, deheap_knns
+
+@testset "deheap_knns tests" begin
+    true_ids = [1 2 3;
+                2 3 4]
+    true_dists = [0.1 0.2 0.3;
+                  0.2 0.3 0.4]
+    heap1 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    push!(heap1, NNTuple(1, 0.1))
+    push!(heap1, NNTuple(2, 0.2))
+    push!(heap1, NNTuple(3, 0.3))
+    heap2 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    push!(heap2, NNTuple(2, 0.2))
+    push!(heap2, NNTuple(3, 0.3))
+    push!(heap2, NNTuple(4, 0.4))
+    heap3 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    push!(heap3, NNTuple(3, 0.3))
+    push!(heap3, NNTuple(4, 0.4))
+    push!(heap3, NNTuple(5, 0.5))
+    @test top(heap1) == NNTuple(3, 0.3)
+    @test top(heap2) == NNTuple(4, 0.4)
+    @test top(heap3) == NNTuple(5, 0.5)
+    heaps = [heap1, heap2, heap3]
+    ids, dists = @inferred deheap_knns(heaps, 2)
+    @test ids == true_ids
+    @test dists == true_dists
+end
 
 @testset "sample neighbors tests" begin
     @testset "sample_rate = 1. tests" begin

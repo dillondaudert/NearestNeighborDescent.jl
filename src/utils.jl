@@ -1,5 +1,5 @@
 import Random: randperm
-import Base: <, isless
+import Base: ==, <, isless
 
 mutable struct NNTuple{R, S}
     idx::R
@@ -8,8 +8,35 @@ mutable struct NNTuple{R, S}
 end
 NNTuple(a, b) = NNTuple(a, b, true)
 
+==(a::NNTuple, b::NNTuple) = (a.idx == b.idx) && (a.dist == b.dist) && (a.flag == b.flag)
 <(a::NNTuple, b::NNTuple) = a.dist < b.dist
 isless(a::NNTuple, b::NNTuple) = <(a, b)
+
+"""
+Remove the `k` nearest neighbors from each heap in `knn_heaps`.
+Return two k x length(knn_heaps) arrays for the indices and 
+distances to each point's kNN.
+"""
+function deheap_knns(heaps::Vector{H}, k) where {S, T, 
+                                                 H <: AbstractHeap{NNTuple{S, T}}}
+    
+    ids = Array{S}(undef, (k, length(heaps)))
+    dists = Array{T}(undef, (k, length(heaps)))
+
+    for i in 1:length(heaps)
+        len = length(heaps[i])
+        for j in 1:len
+            # NOTE: these are max heaps, so we only want the last k
+            tuple = pop!(heaps[i])
+            neighbor_idx = 1 + len - j
+            if neighbor_idx <= k
+                ids[neighbor_idx, i] = tuple.idx
+                dists[neighbor_idx, i] = tuple.dist
+            end
+        end
+    end
+    return ids, dists
+end
 
 """
 Sample `n_neighbors` elements from a set of ints `1:npoints`.
