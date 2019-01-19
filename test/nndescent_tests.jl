@@ -4,14 +4,16 @@
         data = [[0., 0.],
                 [0., 1.]]
         graph = DescentGraph(data, 1)
-        @test size(graph.graph) == (1, 2)
-        @test graph.graph[1,1] == (2, 1.)
-        @test graph.graph[1,2] == (1, 1.)
+        @test size(graph.indices) == (1, 2)
+        @test size(graph.distances) == (1, 2)
+        @test graph.indices == [2 1]
+        @test graph.distances == [1. 1.]
 
         for np = 20:10:50, k = 1:2:10
             data = [rand(5) for _ in 1:np]
             graph = DescentGraph(data, k)
-            @test size(graph.graph) == (k, np)
+            @test size(graph.indices) == (k, np)
+            @test size(graph.distances) == (k, np)
         end
     end
     @testset "Matrix constructor tests" begin
@@ -21,12 +23,10 @@
     @testset "eltype stability tests" begin
         # Float32
         data = [rand(Float32, 10) for _ in 1:100]
-        graph = DescentGraph(data, 5)
-        @test eltype(graph.graph) <: Tuple{Int, Float32}
+        @inferred DescentGraph(data, 5)
         # Integer
         data = [rand([0, 1], 10) for _ in 1:100]
-        graph = DescentGraph(data, 5, Hamming())
-        @test eltype(graph.graph) <: Tuple{Int, Int}
+        @inferred DescentGraph(data, 5, Hamming())
     end
 end
 
@@ -55,20 +55,20 @@ end
         end
         @testset "basic_nndescent tests" begin
             graph = DescentGraph(data, 3)
-            @test_skip sort(getindex.(graph.graph, 1), dims=1) == sort(true_3nn, dims=1)
+            @test_skip sort(graph.indices, dims=1) == sort(true_3nn, dims=1)
         end
     end
     @testset "CosineDist" begin
         data = [rand(50) for _ in 1:10]
-        _3nn = brute_knn(data, CosineDist(), 3)
-        desc_3nn = DescentGraph(data, 3, CosineDist()).graph
-        @test_skip getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
+        true_3nn = brute_knn(data, CosineDist(), 3)
+        desc_3nn = DescentGraph(data, 3, CosineDist()).indices
+        @test_skip getindex.(true_3nn, 1) == desc_3nn
     end
     @testset "Hamming" begin
         data = [rand([0, 1], 50) for _ in 1:10]
-        _3nn = brute_knn(data, Hamming(), 3)
-        desc_3nn = DescentGraph(data, 3, Hamming()).graph
-        @test_skip getindex.(_3nn, 1) == getindex.(desc_3nn, 1)
+        true_3nn = brute_knn(data, Hamming(), 3)
+        desc_3nn = DescentGraph(data, 3, Hamming()).indices
+        @test_skip getindex.(true_3nn, 1) == desc_3nn
     end
 end
 

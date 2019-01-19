@@ -1,9 +1,10 @@
 # A simple NN graph implementation
 
-struct DescentGraph{V <: AbstractVector,M,S <: Tuple}
+struct DescentGraph{S, V <: AbstractVector{S}, M <: SemiMetric}
     data::Vector{V}
     metric::M
-    graph::Matrix{S}
+    indices::Matrix{Int}
+    distances::Matrix{S}
 end
 
 """
@@ -32,9 +33,8 @@ function DescentGraph(data::Vector{V},
     max_iters >= 1 || error("max_iters must be greater than 0")
     0. < sample_rate ≤ 1. || error("sample_rate must be in (0., 1.]")
     0. ≤ precision ≤ 1. || error("precision must be in [0., 1.]")
-    DescentGraph(data,
-                 metric,
-                 build_graph(data, n_neighbors, metric, max_iters, sample_rate, precision))
+    ids, dists = build_graph(data, n_neighbors, metric, max_iters, sample_rate, precision)
+    DescentGraph(data, metric, ids, dists)
 end
 
 """
@@ -102,14 +102,8 @@ function build_graph(data::Vector{V},
             break
         end
     end
-    knn_graph = Matrix{Tuple{Int, Dtype}}(undef, k, np)
-    for j in 1:np
-        rev_nns = [pop!(knn_heaps[j]) for _ in 1:length(knn_heaps[j])]
-        for i in 1:k
-            knn_graph[i, j] = (rev_nns[end-(i-1)].idx, rev_nns[end-(i-1)].dist)
-        end
-    end
-    return knn_graph
+    
+    return deheap_knns(knn_heaps, k)
 end
 
 """
@@ -146,29 +140,20 @@ function search(graph::DescentGraph,
             end
             # expand closest unexpanded neighbor
             unexp.flag = true
-            for t in graph.graph[:,unexp.idx]
-                if !seen[t[1]]
-                    seen[t[1]] = true
+            for k in view(graph.indices, :, unexp.idx)
+                if !seen[k]
+                    seen[k] = true
                     d = evaluate(graph.metric,
                                  queries[i],
-                                 graph.data[t[1]])
+                                 graph.data[k])
                     _unchecked_heappush!(candidates[i],
-                                         NNTuple(t[1], d, false),
+                                         NNTuple(k, d, false),
                                          max_candidates)
                 end
             end
         end
     end
-    knn_graph = [[pop!(candidates[i]) for _ in 1:length(candidates[i])][end:-1:end-(n_neighbors-1)]
-                 for i in 1:length(candidates)]
-    ids = Array{Int}(undef, (n_neighbors, length(queries)))
-    dists = Array{Dtype}(undef, (n_neighbors, length(queries)))
-
-    for i = 1:length(queries), j in 1:n_neighbors
-        ids[j, i] = knn_graph[i][j].idx
-        dists[j, i] = knn_graph[i][j].dist
-    end
-    return ids, dists
+    return deheap_knns(candidates, n_neighbors)
 end
 
 """
