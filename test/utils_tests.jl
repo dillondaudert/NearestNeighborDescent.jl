@@ -5,21 +5,18 @@ using NearestNeighborDescent: sample_neighbors, make_knn_heaps, deheap_knns
                 2 3 4]
     true_dists = [0.1 0.2 0.3;
                   0.2 0.3 0.4]
-    heap1 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    heap1 = BinaryMinMaxHeap{NNTuple{Int, Float64}}()
     push!(heap1, NNTuple(1, 0.1))
     push!(heap1, NNTuple(2, 0.2))
     push!(heap1, NNTuple(3, 0.3))
-    heap2 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    heap2 = BinaryMinMaxHeap{NNTuple{Int, Float64}}()
     push!(heap2, NNTuple(2, 0.2))
     push!(heap2, NNTuple(3, 0.3))
     push!(heap2, NNTuple(4, 0.4))
-    heap3 = BinaryMaxHeap{NNTuple{Int, Float64}}()
+    heap3 = BinaryMinMaxHeap{NNTuple{Int, Float64}}()
     push!(heap3, NNTuple(3, 0.3))
     push!(heap3, NNTuple(4, 0.4))
     push!(heap3, NNTuple(5, 0.5))
-    @test top(heap1) == NNTuple(3, 0.3)
-    @test top(heap2) == NNTuple(4, 0.4)
-    @test top(heap3) == NNTuple(5, 0.5)
     heaps = [heap1, heap2, heap3]
     ids, dists = @inferred deheap_knns(heaps, 2)
     @test ids == true_ids
@@ -92,10 +89,10 @@ end
         for p in 1:length(knn_heaps)
             @test length(knn_heaps[p]) == n_neighbors
             for t = 1:length(knn_heaps[p])
-                @test knn_heaps[p][t].idx ≠ p
-                @test knn_heaps[p][t].idx ≤ length(data)
-                d = evaluate(Euclidean(), data[p], data[knn_heaps[p][t].idx])
-                @test knn_heaps[p][t].dist == d
+                @test knn_heaps[p].valtree[t].idx ≠ p
+                @test knn_heaps[p].valtree[t].idx ≤ length(data)
+                d = evaluate(Euclidean(), data[p], data[knn_heaps[p].valtree[t].idx])
+                @test knn_heaps[p].valtree[t].dist == d
             end
         end
     end
@@ -108,10 +105,10 @@ end
         for p in 1:length(knn_heaps)
             @test length(knn_heaps[p]) == n_neighbors
             for t = 1:length(knn_heaps[p])
-                @test knn_heaps[p][t].idx ≠ p
-                @test knn_heaps[p][t].idx ≤ length(data)
-                d = evaluate(Hamming(), data[p], data[knn_heaps[p][t].idx])
-                @test knn_heaps[p][t].dist == d
+                @test knn_heaps[p].valtree[t].idx ≠ p
+                @test knn_heaps[p].valtree[t].idx ≤ length(data)
+                d = evaluate(Hamming(), data[p], data[knn_heaps[p].valtree[t].idx])
+                @test knn_heaps[p].valtree[t].dist == d
             end
         end
 
@@ -120,15 +117,15 @@ end
 
 @testset "neighbors tests" begin
     # create heaps
-    knn_heaps = [MutableBinaryMaxHeap{NNTuple{Int, Float64}}() for _ in 1:5]
-    push!(knn_heaps[1], NNTuple(2, Inf))
-    push!(knn_heaps[1], NNTuple(5, Inf))
-    push!(knn_heaps[2], NNTuple(4, Inf))
-    push!(knn_heaps[3], NNTuple(2, Inf))
-    push!(knn_heaps[3], NNTuple(4, Inf))
-    push!(knn_heaps[4], NNTuple(1, Inf))
-    push!(knn_heaps[5], NNTuple(3, Inf))
-    push!(knn_heaps[5], NNTuple(4, Inf))
+    knn_heaps = [BinaryMinMaxHeap{NNTuple{Int, Float64}}() for _ in 1:5]
+    push!(knn_heaps[1], NNTuple(2, 10.))
+    push!(knn_heaps[1], NNTuple(5, 10.))
+    push!(knn_heaps[2], NNTuple(4, 100.))
+    push!(knn_heaps[3], NNTuple(2, 100.))
+    push!(knn_heaps[3], NNTuple(4, 100.))
+    push!(knn_heaps[4], NNTuple(1, 100.))
+    push!(knn_heaps[5], NNTuple(3, 100.))
+    push!(knn_heaps[5], NNTuple(4, 100.))
     old_fw, fw, old_bw, bw = _neighbors(knn_heaps)
 
     @testset "new fw neighbors tests" begin
@@ -223,8 +220,8 @@ end
             v_knn = MutableBinaryMaxHeap{NNTuple{Int, Float64}}()
             push!(v_knn, NNTuple(1, 10.))
             push!(v_knn, NNTuple(2, 20.))
-            push!(v_knn, NNTuple(3, Inf))
-            @test _heappush!(v_knn, NNTuple(3, 5.)) == 1
+            push!(v_knn, NNTuple(3, 5.))
+            @test _heappush!(v_knn, NNTuple(3, 5.)) == 0
             @test v_knn[3].idx == 3
             @test v_knn[3].dist == 5.
             @test top(v_knn).idx == 2

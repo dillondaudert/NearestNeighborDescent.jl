@@ -24,15 +24,10 @@ function deheap_knns(heaps::Vector{H}, k) where {S, T,
     dists = Array{T}(undef, (k, length(heaps)))
 
     for i in 1:length(heaps)
-        len = length(heaps[i])
-        for j in 1:len
-            # NOTE: these are max heaps, so we only want the last k
-            tuple = pop!(heaps[i])
-            neighbor_idx = 1 + len - j
-            if neighbor_idx <= k
-                ids[neighbor_idx, i] = tuple.idx
-                dists[neighbor_idx, i] = tuple.dist
-            end
+        for j in 1:k
+            tuple = popmin!(heaps[i])
+            ids[j, i] = tuple.idx
+            dists[j, i] = tuple.dist
         end
     end
     return ids, dists
@@ -64,7 +59,7 @@ function make_knn_heaps(data::Vector{V},
                                           M <: SemiMetric}
     np = length(data)
     D = result_type(metric, data[1], data[1])
-    knn_heaps = [MutableBinaryMaxHeap{NNTuple{Int, D}}() for _ in 1:np]
+    knn_heaps = [BinaryMinMaxHeap{NNTuple{Int, D}}() for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in k_idxs
@@ -88,14 +83,14 @@ function _neighbors(graph, sample_rate::AbstractFloat = 1.)
     for i in 1:length(graph), j in 1:length(graph[i])
         # add incoming edge ith -> jth.idx
         if rand() ≤ sample_rate
-            if graph[i][j].flag
+            if graph[i].valtree[j].flag
                 # denote this neighbor has participated in local join
-                graph[i][j].flag = false
-                append!(new_fw_neighbors[i], graph[i][j].idx)
-                append!(new_bw_neighbors[graph[i][j].idx], i)
+                graph[i].valtree[j].flag = false
+                append!(new_fw_neighbors[i], graph[i].valtree[j].idx)
+                append!(new_bw_neighbors[graph[i].valtree[j].idx], i)
             else
-                append!(old_fw_neighbors[i], graph[i][j].idx)
-                append!(old_bw_neighbors[graph[i][j].idx], i)
+                append!(old_fw_neighbors[i], graph[i].valtree[j].idx)
+                append!(old_bw_neighbors[graph[i].valtree[j].idx], i)
             end
         end
     end
@@ -175,15 +170,10 @@ function _unchecked_heappush!(heap::AbstractHeap,
 
 end
 
-@inline function _push_or_update!(h::MutableBinaryHeap, t, maxc)
-    _, i = top_with_handle(h)
-    h[i] = t
-    return
-end
-@inline function _push_or_update!(h::BinaryHeap, t, maxc)
+@inline function _push_or_update!(h::BinaryMinMaxHeap, t, maxc)
     push!(h, t)
     if length(h) > maxc
-        pop!(h)
+        popmax!(h)
     end
     return
 end
@@ -194,18 +184,7 @@ Returns (exists::Bool, updated::Bool)
 """
 function _check_tuple() end
 
-@inline function _check_tuple(h::MutableBinaryHeap, i, t)
-    if h[i].idx == t.idx
-        if h[i].dist == typemax(typeof(h[i].dist))
-            h[i] = t
-            return true, true
-        end
-        return true, false
-    end
-    return false, false
-end
-
-@inline function _check_tuple(h::BinaryHeap, i, t)
+@inline function _check_tuple(h::BinaryMinMaxHeap, i, t)
     if h.valtree[i].idx == t.idx
         return true, false
     end
