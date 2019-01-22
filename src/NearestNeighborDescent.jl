@@ -1,7 +1,7 @@
 module NearestNeighborDescent
 
 using Distances: SemiMetric, Euclidean, evaluate, result_type
-using DataStructures
+using DataStructures: AbstractHeap, BinaryMaxHeap, BinaryHeap, top, pop! 
 
 include("utils.jl")
 include("nn_descent.jl")
