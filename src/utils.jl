@@ -125,7 +125,7 @@ function _heappush!(heap::AbstractHeap,
     elseif length(heap) == 0
         push!(heap, tup)
         return 1
-    elseif length(heap) < max_candidates || tup < top(heap)
+    elseif length(heap) < max_candidates || tup < maximum(heap)
         # check if already in heap
         for i in 1:length(heap)
             exists, updated = _check_tuple(heap, i, tup)
