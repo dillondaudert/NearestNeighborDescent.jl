@@ -111,7 +111,7 @@ end
     _heappush!(heap::BinaryHeap, tup::NNTuple, max_candidates)
 
 Try to push a neighbor `tup` to `heap`. This will fail (return `0`) if `tup` is
-already in `heap`, if `tup.dist > top(heap).dist`. Otherwise return `1`.
+already in `heap`, if `tup.dist > maximum(heap).dist`. Otherwise return `1`.
 If `length(heap) > max_candidates` after pushing, `pop` the largest candidate.
 """
 function _heappush!(heap::AbstractHeap,
@@ -161,7 +161,7 @@ function _unchecked_heappush!(heap::AbstractHeap,
         push!(heap, tup)
         return 1
     # heap full but this neighbor closer
-    elseif tup < top(heap)
+    elseif tup < maximum(heap)
         # push and maintain size
         _push_or_update!(heap, tup, max_candidates)
         return 1
