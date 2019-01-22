@@ -64,7 +64,7 @@ function make_knn_heaps(data::Vector{V},
                                           M <: SemiMetric}
     np = length(data)
     D = result_type(metric, data[1], data[1])
-    knn_heaps = [MutableBinaryMaxHeap{NNTuple{Int, D}}() for _ in 1:np]
+    knn_heaps = [BinaryMaxHeap{NNTuple{Int, D}}() for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in k_idxs
@@ -88,14 +88,14 @@ function _neighbors(graph, sample_rate::AbstractFloat = 1.)
     for i in 1:length(graph), j in 1:length(graph[i])
         # add incoming edge ith -> jth.idx
         if rand() ≤ sample_rate
-            if graph[i][j].flag
+            if graph[i].valtree[j].flag
                 # denote this neighbor has participated in local join
-                graph[i][j].flag = false
-                append!(new_fw_neighbors[i], graph[i][j].idx)
-                append!(new_bw_neighbors[graph[i][j].idx], i)
+                graph[i].valtree[j].flag = false
+                append!(new_fw_neighbors[i], graph[i].valtree[j].idx)
+                append!(new_bw_neighbors[graph[i].valtree[j].idx], i)
             else
-                append!(old_fw_neighbors[i], graph[i][j].idx)
-                append!(old_bw_neighbors[graph[i][j].idx], i)
+                append!(old_fw_neighbors[i], graph[i].valtree[j].idx)
+                append!(old_bw_neighbors[graph[i].valtree[j].idx], i)
             end
         end
     end
@@ -133,10 +133,7 @@ function _heappush!(heap::AbstractHeap,
     elseif length(heap) < max_candidates || tup < top(heap)
         # check if already in heap
         for i in 1:length(heap)
-            exists, updated = _check_tuple(heap, i, tup)
-            if updated
-                return 1
-            elseif exists
+            if _check_tuple(heap, i, tup)
                 return 0
             end
         end
@@ -175,11 +172,6 @@ function _unchecked_heappush!(heap::AbstractHeap,
 
 end
 
-@inline function _push_or_update!(h::MutableBinaryHeap, t, maxc)
-    _, i = top_with_handle(h)
-    h[i] = t
-    return
-end
 @inline function _push_or_update!(h::BinaryHeap, t, maxc)
     push!(h, t)
     if length(h) > maxc
@@ -192,22 +184,9 @@ end
 Check if a tuple exists in a heap at index `i`, and optionally update its dist.
 Returns (exists::Bool, updated::Bool)
 """
-function _check_tuple() end
-
-@inline function _check_tuple(h::MutableBinaryHeap, i, t)
-    if h[i].idx == t.idx
-        if h[i].dist == typemax(typeof(h[i].dist))
-            h[i] = t
-            return true, true
-        end
-        return true, false
-    end
-    return false, false
-end
-
 @inline function _check_tuple(h::BinaryHeap, i, t)
     if h.valtree[i].idx == t.idx
-        return true, false
+        return true
     end
-    return false, false
+    return false
 end
