@@ -128,10 +128,7 @@ function _heappush!(heap::AbstractHeap,
     elseif length(heap) < max_candidates || tup < maximum(heap)
         # check if already in heap
         for i in 1:length(heap)
-            exists, updated = _check_tuple(heap, i, tup)
-            if updated
-                return 1
-            elseif exists
+            if _check_tuple(heap, i, tup)
                 return 0
             end
         end
@@ -182,11 +179,9 @@ end
 Check if a tuple exists in a heap at index `i`, and optionally update its dist.
 Returns (exists::Bool, updated::Bool)
 """
-function _check_tuple() end
-
 @inline function _check_tuple(h::BinaryMinMaxHeap, i, t)
     if h.valtree[i].idx == t.idx
-        return true, false
+        return true
     end
-    return false, false
+    return false
 end
