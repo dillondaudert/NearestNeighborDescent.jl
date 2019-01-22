@@ -1,7 +1,7 @@
 name = "NearestNeighborDescent"
 uuid = "1dd1f7d0-b91d-11e8-266b-d34208f3077b"
 authors = ["Dillon Daudert <dillongdaudert@gmail.com>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
