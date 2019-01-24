@@ -14,6 +14,7 @@ datasets = ("rand"=>rand_data,
 n_neighbors = (5, 10)
 metrics = (Euclidean(),)
 
+# graph construction time
 SUITE["graph"] = BenchmarkGroup(["graph", "construction"])
 SUITE["graph"]["time"] = BenchmarkGroup()
 
@@ -21,9 +22,6 @@ for d in datasets, k in n_neighbors, m in metrics
     SUITE["graph"]["time"][d[1], k, string(m)] = @benchmarkable DescentGraph($(d[2]), $(k), $(m))
 end
 
-#SUITE["search"] = BenchmarkGroup(["search", "query"])
-#SUITE["search"]["..."]
-#SUITE["brute"] = BenchmarkGroup(["constructor"])
-#SUITE["brute"]["rand"] = @benchmarkable brute_knn($rand_data, Euclidean(), 10)
-#SUITE["brute"]["fmnist"] = @benchmarkable brute_knn($FMNIST_data, Euclidean(), 10)
-#SUITE["brute"]["mnist"] = @benchmarkable brute_knn($MNIST_data, Euclidean(), 10)
+# graph recall
+
+# queries per second 
