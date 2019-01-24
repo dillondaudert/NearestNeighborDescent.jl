@@ -125,7 +125,7 @@ function search(graph::DescentGraph,
     max_candidates = trunc(Int, n_neighbors*queue_size)
     Dtype = result_type(graph.metric, queries[1], queries[1])
     candidates = [BinaryMaxHeap{NNTuple{Int, Dtype}}() for _ in 1:length(queries)]
-    for i in eachindex(queries)
+    Threads.@threads for i in eachindex(queries)
         # init
         seen = fill(false, length(graph.data))
         j =  rand(1:length(graph.data))
