@@ -50,3 +50,10 @@ SUITE["query"]["random"][:vectors, :cosine] = @benchmarkable search(graph, $rand
 SUITE["query"]["random"][:matrices, :cosine] = @benchmarkable search(graph, $rand_query_mats, 10, 10) setup=(graph=DescentGraph($rand_mats, 10, CosineDist()))
 SUITE["query"]["random"][:vectors, :hamming] = @benchmarkable search(graph, $ham_query_vecs, 10, 10) setup=(graph=DescentGraph($ham_vecs, 10, Hamming()))
 SUITE["query"]["random"][:matrices, :hamming] = @benchmarkable search(graph, $ham_query_mats, 10, 10) setup=(graph=DescentGraph($ham_mats, 10, Hamming()))
+
+
+# real-world dataset query benchmarks
+SUITE["query"]["real"] = BenchmarkGroup()
+
+SUITE["query"]["real"][:mnist] = @benchmarkable search(graph, $MNIST_queries, 10, 10) setup=(graph=DescentGraph($MNIST_data, 10, Euclidean()))
+SUITE["query"]["real"][:fmnist] = @benchmarkable search(graph, $FMNIST_queries, 5, 10) setup=(graph=DescentGraph($FMNIST_data, 5, Euclidean()))
