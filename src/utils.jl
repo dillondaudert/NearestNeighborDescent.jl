@@ -64,7 +64,8 @@ function make_knn_heaps(data::Vector{V},
                                           M <: SemiMetric}
     np = length(data)
     D = result_type(metric, data[1], data[1])
-    knn_heaps = [BinaryMaxHeap{NNTuple{Int, D}}() for _ in 1:np]
+    HeapType = BinaryMaxHeap{NNTuple{Int, D}}
+    knn_heaps = HeapType[HeapType() for _ in 1:np]
     for i in 1:np
         k_idxs = sample_neighbors(np, n_neighbors, exclude=[i])
         for j in k_idxs
