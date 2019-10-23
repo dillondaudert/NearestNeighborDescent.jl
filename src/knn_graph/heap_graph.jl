@@ -146,9 +146,17 @@ complexity of `𝒪(K)`.
 outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
 
 # nndescent utilities
+# TODO: all_neighbors exists as part of the LightGraphs interface, and returns a 
+#       slightly different format of the neighbors as the methods below. These
+#       should be renamed to something that indicates they're useful for the
+#       local join of nndescent, and LightGraphs.all_neighbors should be
+#       implemented
+#       The GOAL is so there can be some genericity in NNDescent, with certain
+#       KNNGraphs having method implementations that lead to more efficient
+#       execution in that specific context.
 
 """
-    neighbors(g::HeapKNNGraph)
+    all_neighbors(g::HeapKNNGraph)
 
 Return lists of the forward and reverse neighbors for every vertex in `g`.
 
@@ -156,7 +164,7 @@ Return lists of the forward and reverse neighbors for every vertex in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function neighbors(g::HeapKNNGraph{V}) where V
+function all_neighbors(g::HeapKNNGraph{V}) where V
     fw_neighbors = [V[] for _ in 1:nv(g)]
     bw_neighbors = [V[] for _ in 1:nv(g)]
     for e in edges(g)
@@ -167,12 +175,12 @@ function neighbors(g::HeapKNNGraph{V}) where V
 end
 
 """
-    neighbors!((fw_neighbors, bw_neighbors), g::HeapKNNGraph)
+    all_neighbors!((fw_neighbors, bw_neighbors), g::HeapKNNGraph)
 
-Like `neighbors(g)`, but populates the provided lists of lists. If re-used
+Like `all_neighbors(g)`, but populates the provided lists of lists. If re-used
 by multiple calls, this might save time in memory allocation.
 """
-function neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
+function all_neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
     # emptying the arrays won't dealloc the memory ?
     (empty!).(fw_neighbors)
     (empty!).(bw_neighbors)
@@ -184,7 +192,7 @@ function neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V
 end
 
 """
-    neighbors(g::HeapKNNGraph, v)
+    all_neighbors(g::HeapKNNGraph, v)
 
 Return all forward and reverse neighbors for vertex `v` in `g`.
 
@@ -192,7 +200,7 @@ Return all forward and reverse neighbors for vertex `v` in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function neighbors(g::HeapKNNGraph{V}, v::V) where V
+function all_neighbors(g::HeapKNNGraph{V}, v::V) where V
     fw_neighbors = V[]
     bw_neighbors = V[]
     for e in edges(g)
@@ -222,3 +230,8 @@ function add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     end
     return 0
 end
+
+"""
+    vertex_diameter(g::ApproximateKNNGraph
+"""
+function vertex_diameter(g::ApproximateKNNGraph{V}, v::V) where V end 
