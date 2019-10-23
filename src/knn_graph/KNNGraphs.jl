@@ -2,11 +2,12 @@ module KNNGraphs
 
 using Distances: PreMetric, SemiMetric, result_type, evaluate
 using DataStructures: BinaryMaxHeap, top, pop!
+using SparseArrays: sparse
 
 # imports for adding method definitions
 import Base: eltype, ==, <, isless
 import LightGraphs: AbstractGraph, edges, edgetype, has_edge, has_vertex, inneighbors, ne, nv
-import LightGraphs: outneighbors, vertices, is_directed, AbstractEdge, src, dst, reverse
+import LightGraphs: outneighbors, vertices, is_directed, AbstractEdge, src, dst, reverse, weights
 
 
 # Abstract KNN Graph definitions
