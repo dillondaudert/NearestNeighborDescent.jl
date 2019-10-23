@@ -46,7 +46,7 @@ end
 
 Return an iterator of the vertices in the KNN graph.
 """
-vertices(g::HeapKNNGraph{V}) = one(V):V(length(g._knn_heaps))
+vertices(g::HeapKNNGraph{V}) where V = one(V):V(length(g._knn_heaps))
 
 """
     weights(g::HeapKNNGraph{V, K, U})
@@ -129,7 +129,7 @@ HeapKNNGraph doesn't store inneighbors directly; it must find them by iterating
 over the outgoing edges for each vertex and saving those where `v == dst(e)`.
 Thus, this has time complexity `𝒪(nv(g)*K)`.
 """
-function inneighbors(g::HeapKNNGraph{V}, v::V)
+function inneighbors(g::HeapKNNGraph{V}, v::V) where V
     return collect(src(e) for e in edges(g) if dst(e) == v)
 end
 
@@ -156,7 +156,7 @@ Return lists of the forward and reverse neighbors for every vertex in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function neighbors(g::HeapKNNGraph{V})
+function neighbors(g::HeapKNNGraph{V}) where V
     fw_neighbors = [V[] for _ in 1:nv(g)]
     bw_neighbors = [V[] for _ in 1:nv(g)]
     for e in edges(g)
@@ -172,7 +172,7 @@ end
 Like `neighbors(g)`, but populates the provided lists of lists. If re-used
 by multiple calls, this might save time in memory allocation.
 """
-function neighbors!((fw_neighbors::T, bw_neighbors::T), g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
+function neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
     # emptying the arrays won't dealloc the memory ?
     (empty!).(fw_neighbors)
     (empty!).(bw_neighbors)
@@ -192,7 +192,7 @@ Return all forward and reverse neighbors for vertex `v` in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function neighbors(g::HeapKNNGraph{V}, v::V)
+function neighbors(g::HeapKNNGraph{V}, v::V) where V
     fw_neighbors = V[]
     bw_neighbors = V[]
     for e in edges(g)
