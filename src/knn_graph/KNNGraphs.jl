@@ -6,7 +6,7 @@ using SparseArrays: sparse
 
 # imports for adding method definitions
 import Base: eltype, ==, <, isless
-import LightGraphs: AbstractGraph, edges, edgetype, has_edge, has_vertex, inneighbors, ne, nv
+import LightGraphs: AbstractGraph, edges, edgetype, has_edge, has_vertex, inneighbors, ne, nv, add_edge!
 import LightGraphs: outneighbors, vertices, is_directed, AbstractEdge, src, dst, reverse, weights
 
 
@@ -27,5 +27,8 @@ include("abstract.jl")
 include("heap_edge.jl")
 include("heap_graph.jl")
 include("heap_utils.jl")
+
+# export public interface
+export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge, knn_diameter 
 
 end
