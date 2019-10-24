@@ -7,7 +7,7 @@ using binary max heaps to store each vertex's forward edges, allowing for
 efficient updates of the candidate neighbors.
 """
 struct HeapKNNGraph{V, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
-    _knn_heaps::Vector{BinaryMaxHeap}
+    _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
 end
 function HeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: AbstractVector}
     # assert some invariants
@@ -231,7 +231,8 @@ function add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     return 0
 end
 
-"""
-    vertex_diameter(g::ApproximateKNNGraph
-"""
-function vertex_diameter(g::ApproximateKNNGraph{V}, v::V) where V end 
+# knn graph interface methods
+
+function knn_diameter(g::HeapKNNGraph{V}, v::V) where V
+    return 2 * weight(top(g._knn_heaps[v]))
+end

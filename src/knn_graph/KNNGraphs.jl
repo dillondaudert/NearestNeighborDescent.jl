@@ -23,6 +23,7 @@ eltype(::ApproximateKNNGraph{V, K, U}) where {V, K, U} = V
 is_directed(::Type{<:ApproximateKNNGraph}) = true
 is_directed(::ApproximateKNNGraph) = true
 
+include("abstract.jl")
 include("heap_edge.jl")
 include("heap_graph.jl")
 include("heap_utils.jl")

@@ -1,29 +1,16 @@
-# fallback method definitions for abstract knn graph types
+# fallback method definitions for knn graph types
 
 #######################
 # ApproximateKNNGraph #
 #######################
 
 """
-    knn_diameter(g::ApproximateKNNGraph{V}, v::V; dir=:out)
+    knn_diameter(g::ApproximateKNNGraph{V}, v::V)
 
 Compute the diameter of the ball centered on `v` that covers
-all of `v`s neighbors. `dir` is used to specify which neighbors
-to consider, one of `:in`, `:out`, `:both`.
+all of `v`s approximate k-nearest neighbors.
 """
-function knn_diameter(g::ApproximateKNNGraph{V}, v::V; dir=:out) where V 
-    if dir == :in
-        neighbs = inneighbors(g, v)
-        diam = max(weights(g)[v, neighbs])
-    elseif dir == :out
-        neighbs = outneighbors(g, v)
-        diam = max(weights(g)[neighbs, v])
-    elseif dir == :both
-        error("Not implemented")
-    else
-        throw(ArgumentError("dir=$dir is not a valid value."))
-    end
-
-    return diam
-    
+function knn_diameter(g::ApproximateKNNGraph{V}, v::V) where V 
+    neighbs = outneighbors(g, v)
+    return 2 * maximum(weights(g)[neighbs, v])
 end
