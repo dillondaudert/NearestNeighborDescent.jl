@@ -1,5 +1,4 @@
 # temporary draft implementation to eventually replace nn_descent.jl
-using LightGraphs: vertices, add_edge!, neighbors, edgetype
 
 """
     nndescent(::Type{graph_type}, data, nneighbors, metric)

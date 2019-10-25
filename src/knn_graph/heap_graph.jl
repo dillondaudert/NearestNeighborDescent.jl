@@ -37,7 +37,7 @@ end
 
 Return an iterator of the edges in this KNN graph.
 """
-function edges(g::HeapKNNGraph)
+function LightGraphs.edges(g::HeapKNNGraph)
     return (e for heap in g._knn_heaps for e in heap.valtree)
 end
 
@@ -46,7 +46,7 @@ end
 
 Return an iterator of the vertices in the KNN graph.
 """
-vertices(g::HeapKNNGraph{V}) where V = one(V):V(length(g._knn_heaps))
+LightGraphs.vertices(g::HeapKNNGraph{V}) where V = one(V):V(length(g._knn_heaps))
 
 """
     weights(g::HeapKNNGraph{V, K, U})
@@ -54,7 +54,7 @@ vertices(g::HeapKNNGraph{V}) where V = one(V):V(length(g._knn_heaps))
 Returns a SparseMatrixCSC{U, V} `w` where `w[j, i]` returns the weight of the
 directed edge from vertex `i` to `j`.
 """
-function weights(g::HeapKNNGraph{V, K, U}) where {V, K, U}
+function LightGraphs.weights(g::HeapKNNGraph{V, K, U}) where {V, K, U}
     # dests, srcs, ws where weights[dests[k], srcs[k]] = ws[k]
     srcs, dsts = V[], V[]
     vals = U[]
@@ -71,7 +71,7 @@ end
 
 Return the type of the edges in `g`.
 """
-function edgetype(g::HeapKNNGraph{V, K, U}) where {V, K, U}
+function LightGraphs.edgetype(g::HeapKNNGraph{V, K, U}) where {V, K, U}
     return HeapKNNGraphEdge{V, U}
 end
 
@@ -80,7 +80,7 @@ end
 
 Return true if the graph g has an edge from `s` to `d`, else false.
 """
-function has_edge(g::HeapKNNGraph{V}, s, d) where V
+function LightGraphs.has_edge(g::HeapKNNGraph{V}, s, d) where V
     for e in g._knn_heaps[s].valtree
         if dst(e) == d
             return true
@@ -93,7 +93,7 @@ end
 
 Return true if `g` contains the edge `e`.
 """
-function has_edge(g::HeapKNNGraph{V, K, U}, e::HeapKNNGraphEdge{V, U}) where {V, K, U}
+function LightGraphs.has_edge(g::HeapKNNGraph{V, K, U}, e::HeapKNNGraphEdge{V, U}) where {V, K, U}
     return e in g._knn_heaps[src(e)].valtree
 end
 
@@ -102,21 +102,21 @@ end
 
 Return true if vertex `v` is in `g`.
 """
-has_vertex(g::HeapKNNGraph{V}, v::V) where V = v in 1:nv(g)
+LightGraphs.has_vertex(g::HeapKNNGraph{V}, v::V) where V = v in 1:nv(g)
 
 """
     ne(g::HeapKNNGraph)
 
 Return the number of edges in `g`.
 """
-ne(g::HeapKNNGraph{V, K, U}) where {V, K, U} = K*nv(g)
+LightGraphs.ne(g::HeapKNNGraph{V, K, U}) where {V, K, U} = K*nv(g)
 
 """
     nv(g::HeapKNNGraph)
 
 Return the number of vertices in `g`.
 """
-nv(g::HeapKNNGraph) = length(g._knn_heaps)
+LightGraphs.nv(g::HeapKNNGraph) = length(g._knn_heaps)
 
 """
     inneighbors(g::HeapKNNGraph, v)
@@ -129,7 +129,7 @@ HeapKNNGraph doesn't store inneighbors directly; it must find them by iterating
 over the outgoing edges for each vertex and saving those where `v == dst(e)`.
 Thus, this has time complexity `𝒪(nv(g)*K)`.
 """
-function inneighbors(g::HeapKNNGraph{V}, v::V) where V
+function LightGraphs.inneighbors(g::HeapKNNGraph{V}, v::V) where V
     return collect(src(e) for e in edges(g) if dst(e) == v)
 end
 
@@ -143,7 +143,7 @@ Return a list of the neighbors of `v` connected by outgoing edges.
 HeapKNNGraph stores each vertex's outgoing edges in a heap, so this has a time
 complexity of `𝒪(K)`.
 """
-outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
+LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
 
 # nndescent utilities
 # TODO: all_neighbors exists as part of the LightGraphs interface, and returns a 
@@ -156,7 +156,7 @@ outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
 #       execution in that specific context.
 
 """
-    all_neighbors(g::HeapKNNGraph)
+    _all_neighbors(g::HeapKNNGraph)
 
 Return lists of the forward and reverse neighbors for every vertex in `g`.
 
@@ -164,7 +164,7 @@ Return lists of the forward and reverse neighbors for every vertex in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function all_neighbors(g::HeapKNNGraph{V}) where V
+function _all_neighbors(g::HeapKNNGraph{V}) where V
     fw_neighbors = [V[] for _ in 1:nv(g)]
     bw_neighbors = [V[] for _ in 1:nv(g)]
     for e in edges(g)
@@ -175,12 +175,12 @@ function all_neighbors(g::HeapKNNGraph{V}) where V
 end
 
 """
-    all_neighbors!((fw_neighbors, bw_neighbors), g::HeapKNNGraph)
+    _all_neighbors!((fw_neighbors, bw_neighbors), g::HeapKNNGraph)
 
-Like `all_neighbors(g)`, but populates the provided lists of lists. If re-used
+Like `_all_neighbors(g)`, but populates the provided lists of lists. If re-used
 by multiple calls, this might save time in memory allocation.
 """
-function all_neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
+function _all_neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
     # emptying the arrays won't dealloc the memory ?
     (empty!).(fw_neighbors)
     (empty!).(bw_neighbors)
@@ -192,7 +192,7 @@ function all_neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGra
 end
 
 """
-    all_neighbors(g::HeapKNNGraph, v)
+    _all_neighbors(g::HeapKNNGraph, v)
 
 Return all forward and reverse neighbors for vertex `v` in `g`.
 
@@ -200,7 +200,7 @@ Return all forward and reverse neighbors for vertex `v` in `g`.
 
 Time complexity of `𝒪(ne(g))`.
 """
-function all_neighbors(g::HeapKNNGraph{V}, v::V) where V
+function _all_neighbors(g::HeapKNNGraph{V}, v::V) where V
     fw_neighbors = V[]
     bw_neighbors = V[]
     for e in edges(g)
@@ -221,7 +221,7 @@ vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `0`) if
 `e` is already in the heap, if `e.weight > top(heap).weight`. Otherwise return `1`.
 If `length(heap) > K` after pushing, `pop` the largest candidate.
 """
-function add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
+function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
     if e < top(g._knn_heaps[src(e)]) && !has_edge(g, e)
         push!(g._knn_heaps[src(e)], e)

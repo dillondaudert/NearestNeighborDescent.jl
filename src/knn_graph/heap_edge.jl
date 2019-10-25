@@ -31,6 +31,6 @@ Base.isless(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = a < b
 flag(e::HeapKNNGraphEdge) = e.flag
 weight(e::HeapKNNGraphEdge) = e.weight
 # lightgraphs interface
-src(e::HeapKNNGraphEdge) = e.src
-dst(e::HeapKNNGraphEdge) = e.dst
-reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))
+LightGraphs.src(e::HeapKNNGraphEdge) = e.src
+LightGraphs.dst(e::HeapKNNGraphEdge) = e.dst
+LightGraphs.reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))
