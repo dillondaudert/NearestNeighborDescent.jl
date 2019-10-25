@@ -9,7 +9,7 @@ mutable struct HeapKNNGraphEdge{T<:Integer, U<:Real} <: AbstractEdge{T}
     dst::T
     weight::U
     flag::Bool
-    function HeapKNNGraphEdge{T, U}(src, dst, weight, flag) where {T<:Integer, U<:Real}
+    function HeapKNNGraphEdge{T, U}(src, dst, weight, flag=false) where {T<:Integer, U<:Real}
         # assert no self edges
         src != dst || error("src cannot be the same as dst (no self loops) for HeapKNNGraphEdge")
         return new(src, dst, weight, flag)

@@ -1,4 +1,4 @@
- # Concrete definition
+# Concrete definition
 """
     HeapKNNGraph{V, K, U}
 
