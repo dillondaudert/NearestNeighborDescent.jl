@@ -158,37 +158,36 @@ LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v
 """
     _all_neighbors(g::HeapKNNGraph)
 
-Return lists of the forward and reverse neighbors for every vertex in `g`.
+Return lists of the old and new forward *and* reverse neighbors for every vertex in `g`.
 
 **Implementation Notes**
 
 Time complexity of `𝒪(ne(g))`.
 """
 function _all_neighbors(g::HeapKNNGraph{V}) where V
-    fw_neighbors = [V[] for _ in 1:nv(g)]
-    bw_neighbors = [V[] for _ in 1:nv(g)]
+    old_neighbors = [BitSet() for _ in 1:nv(g)]
+    new_neighbors = [BitSet() for _ in 1:nv(g)]
     for e in edges(g)
-        push!(fw_neighbors[src(e)], dst(e))
-        push!(bw_neighbors[dst(e)], src(e))
+        if flag(e)
+            union!(old_neighbors[src(e)], dst(e))
+            union!(old_neighbors[dst(e)], src(e))
+        else
+            union!(new_neighbors[src(e)], dst(e))
+            union!(new_neighbors[dst(e)], src(e))
+        end
     end
-    return fw_neighbors, bw_neighbors
+    return old_neighbors, new_neighbors
 end
 
 """
-    _all_neighbors!((fw_neighbors, bw_neighbors), g::HeapKNNGraph)
+    _all_neighbors!((old_neighbors, new_neighbors), g::HeapKNNGraph)
 
-Like `_all_neighbors(g)`, but populates the provided lists of lists. If re-used
+Like `_all_neighbors(g)`, but populates the provided lists of sets. If re-used
 by multiple calls, this might save time in memory allocation.
 """
-function _all_neighbors!((fw_neighbors, bw_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{V}}
+function _all_neighbors!((old_neighbors, new_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{BitSet}}
     # emptying the arrays won't dealloc the memory ?
-    (empty!).(fw_neighbors)
-    (empty!).(bw_neighbors)
-    for e in edges(g)
-        push!(fw_neighbors[src(e)], dst(e))
-        push!(bw_neighbors[dst(e)], src(e))
-    end
-    return fw_neighbors, bw_neighbors
+    error("Not implemented")
 end
 
 """
@@ -201,16 +200,7 @@ Return all forward and reverse neighbors for vertex `v` in `g`.
 Time complexity of `𝒪(ne(g))`.
 """
 function _all_neighbors(g::HeapKNNGraph{V}, v::V) where V
-    fw_neighbors = V[]
-    bw_neighbors = V[]
-    for e in edges(g)
-        if src(e) == v
-            push!(fw_neighbors, dst(e))
-        elseif dst(e) == v
-            push!(bw_neighbors, src(e))
-        end
-    end
-    return fw_neighbors, bw_neighbors
+    error("Not implemented")
 end
 
 """
