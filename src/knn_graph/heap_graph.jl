@@ -6,7 +6,7 @@ A weighted, directed graph representing an approximate k-nearest neighbors graph
 using binary max heaps to store each vertex's forward edges, allowing for
 efficient updates of the candidate neighbors.
 """
-struct HeapKNNGraph{V, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
+struct HeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
     _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
 end
 function HeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: AbstractVector}
@@ -145,64 +145,6 @@ complexity of `𝒪(K)`.
 """
 LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
 
-# nndescent utilities
-# TODO: all_neighbors exists as part of the LightGraphs interface, and returns a 
-#       slightly different format of the neighbors as the methods below. These
-#       should be renamed to something that indicates they're useful for the
-#       local join of nndescent, and LightGraphs.all_neighbors should be
-#       implemented
-#       The GOAL is so there can be some genericity in NNDescent, with certain
-#       KNNGraphs having method implementations that lead to more efficient
-#       execution in that specific context.
-
-"""
-    _all_neighbors(g::HeapKNNGraph)
-
-Return lists of the old and new forward *and* reverse neighbors for every vertex in `g`.
-
-**Implementation Notes**
-
-Time complexity of `𝒪(ne(g))`.
-"""
-function _all_neighbors(g::HeapKNNGraph{V}) where V
-    old_neighbors = [BitSet() for _ in 1:nv(g)]
-    new_neighbors = [BitSet() for _ in 1:nv(g)]
-    for e in edges(g)
-        if flag(e)
-            union!(old_neighbors[src(e)], dst(e))
-            union!(old_neighbors[dst(e)], src(e))
-        else
-            union!(new_neighbors[src(e)], dst(e))
-            union!(new_neighbors[dst(e)], src(e))
-        end
-    end
-    return old_neighbors, new_neighbors
-end
-
-"""
-    _all_neighbors!((old_neighbors, new_neighbors), g::HeapKNNGraph)
-
-Like `_all_neighbors(g)`, but populates the provided lists of sets. If re-used
-by multiple calls, this might save time in memory allocation.
-"""
-function _all_neighbors!((old_neighbors, new_neighbors)::Tuple{T, T}, g::HeapKNNGraph{V}) where {V, T <: AbstractVector{BitSet}}
-    # emptying the arrays won't dealloc the memory ?
-    error("Not implemented")
-end
-
-"""
-    _all_neighbors(g::HeapKNNGraph, v)
-
-Return all forward and reverse neighbors for vertex `v` in `g`.
-
-**Implementation Notes**
-
-Time complexity of `𝒪(ne(g))`.
-"""
-function _all_neighbors(g::HeapKNNGraph{V}, v::V) where V
-    error("Not implemented")
-end
-
 """
     add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
 
@@ -221,8 +163,7 @@ function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     return 0
 end
 
-# knn graph interface methods
-
+# KNNGraphs interface methods
 function knn_diameter(g::HeapKNNGraph{V}, v::V) where V
     return 2 * weight(top(g._knn_heaps[v]))
 end
