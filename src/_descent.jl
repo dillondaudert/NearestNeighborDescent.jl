@@ -49,27 +49,7 @@ updates took place during the local join.
 """
 function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
     # find in and out neighbors - old neighbors have already participated in a previous local join
-    old_neighbors = [BitSet() for _ in 1:nv(graph)]
-    new_neighbors = [BitSet() for _ in 1:nv(graph)]
-    for e in edges(graph)
-        if flag(e) # new edges hasn't participated in local join
-            # mark sampled new forward neighbors as old (set flag to false)
-            if rand() ≤ sample_rate
-                e.flag = false
-                union!(new_neighbors[src(e)], dst(e))
-                union!(new_neighbors[dst(e)], src(e))
-            end
-
-        else # old neighbor
-            # always include old fw neighbors
-            union!(old_neighbors[src(e)], dst(e))
-            # sample to include old reverse neighbors
-            if rand() ≤ sample_rate
-                union!(old_neighbors[dst(e)], src(e))
-            end
-        end
-    end
-
+    old_neighbors, new_neighbors = _get_neighbors(graph, sample_rate)
     c = 0
     # compute local join
     for v in vertices(graph)
