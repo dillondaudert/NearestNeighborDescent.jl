@@ -6,6 +6,7 @@ using LightGraphs
 
 include("knn_graph/KNNGraphs.jl")
 using .KNNGraphs
+include("_utils.jl")
 include("_descent.jl")
 
 include("utils.jl")

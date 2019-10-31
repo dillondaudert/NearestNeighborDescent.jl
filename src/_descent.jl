@@ -1,6 +1,43 @@
 # temporary draft implementation to eventually replace nn_descent.jl
 
 """
+    nndescent(::Type{graph_type}, data, n_neighbors, metric)
+
+Find the approximate neighbors of each point in `data` by  iteratively
+refining a KNN graph of type `graph_type`. Returns the final KNN graph.
+
+# Arguments
+- `max_iters = 10`: Limits the number of iterations to refine candidate
+nearest neighbors. Higher values trade off speed for accuracy. Note that graph
+construction may terminate early if little progress is being made.
+- `sample_rate = 1`: The sample rate for calculating *local joins*
+around each point. Lower values trade off accuracy for speed.
+- `precision = 1e-3`: The threshold for early termination,
+where precision is "roughly the fraction of true kNN allowed to be missed due to
+early termination". Lower values take longer but return more accurate results.
+"""
+function nndescent(data::AbstractVector,
+                   n_neighbors::Integer,
+                   metric::PreMetric,
+                   ::Type{G} = HeapKNNGraph;
+                   max_iters = 10,
+                   sample_rate = 1,
+                   precision = 1e-3,
+                  ) where {G <: ApproximateKNNGraph}
+
+    validate_args(data, n_neighbors, metric, max_iters, sample_rate, precision)
+
+    graph = G(data, n_neighbors, metric)
+    for i in 1:max_iters
+        c = local_join!(graph, data, metric; sample_rate=sample_rate)
+        if c ≤ precision * n_neighbors * nv(graph)
+            break
+        end
+    end
+    return graph
+end
+
+"""
     local_join!(g::HeapKNNGraph, data, metric::PreMetric; kwargs...)
 
 Perform a local join on each vertex `v`'s neighborhood `N[v]` in `g`. Given vertex `v`
@@ -34,7 +71,7 @@ function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate =
     end
 
     c = 0
-    # compute local join 
+    # compute local join
     for v in vertices(graph)
         for p in new_neighbors[v]
             for q in (q_ for q_ in new_neighbors[v] if p < q_)
@@ -63,30 +100,12 @@ function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate =
 end
 
 """
-    nndescent(::Type{graph_type}, data, nneighbors, metric)
+    local_join(graph, data, metric) -> graph′, num_updates
 
-Find the approximate neighbors of each point in `data` by  iteratively
-refining a KNN graph of type `graph_type`. Returns the final KNN graph.
+Similar to local_join!(), except there is no mutation of the original graph `g`. This returns the
+graph resulting from the local join operation, as well as the number of updates made by that local
+join.
 """
-function nndescent(::Type{G}, 
-                   data::D, 
-                   nneighbors::Integer, 
-                   metric::PreMetric;
-                   max_iters = 10,
-                   sample_rate = 1,
-                   precision = 1//1000,
-                  ) where {G <: ApproximateKNNGraph,
-                           V <: AbstractVector,
-                           D <: AbstractVector{V}}
-    
-    #validate_args(G, data, nneighbors, metric, max_iters, sample_rate, precision)
+function local_join(g::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
 
-    graph = G(data, nneighbors, metric)
-    for i in 1:max_iters
-        c = local_join!(graph, data, metric; sample_rate=sample_rate)
-        if c ≤ precision * nneighbors * nv(graph)
-            break
-        end
-    end
-    return graph
 end
