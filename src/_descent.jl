@@ -1,7 +1,7 @@
 # temporary draft implementation to eventually replace nn_descent.jl
 
 """
-    nndescent(::Type{graph_type}, data, n_neighbors, metric)
+    nndescent(data, n_neighbors, metric)
 
 Find the approximate neighbors of each point in `data` by  iteratively
 refining a KNN graph of type `graph_type`. Returns the final KNN graph.
@@ -18,8 +18,7 @@ early termination". Lower values take longer but return more accurate results.
 """
 function nndescent(data::AbstractVector,
                    n_neighbors::Integer,
-                   metric::PreMetric,
-                   ::Type{G} = HeapKNNGraph;
+                   metric::PreMetric;
                    max_iters = 10,
                    sample_rate = 1,
                    precision = 1e-3,
@@ -27,7 +26,7 @@ function nndescent(data::AbstractVector,
 
     validate_args(data, n_neighbors, metric, max_iters, sample_rate, precision)
 
-    graph = G(data, n_neighbors, metric)
+    graph = HeapKNNGraph(data, n_neighbors, metric)
     for i in 1:max_iters
         c = local_join!(graph, data, metric; sample_rate=sample_rate)
         if c ≤ precision * n_neighbors * nv(graph)
