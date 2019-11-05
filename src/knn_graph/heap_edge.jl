@@ -26,8 +26,6 @@ end
 
 Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
 
-Base.isless(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = a < b
-
 flag(e::HeapKNNGraphEdge) = e.flag
 weight(e::HeapKNNGraphEdge) = e.weight
 # lightgraphs interface
