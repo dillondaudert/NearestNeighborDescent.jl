@@ -1,18 +1,25 @@
 module BenchKNNGraphs
 
 using NearestNeighborDescent.KNNGraphs
+using LightGraphs
 using Distances
 using BenchmarkTools
 using Random
+
+function graph_has_edges(graph, es)
+    for e in es
+        has_edge(graph, e)
+    end
+end
 
 suite = BenchmarkGroup()
 
 knn_graph_types = [HeapKNNGraph]
 dtypes = [Float32, Float64]
-num_points = [250, 1250, 6250]
-dims = [25, 125, 625]
-num_neighbs = [10, 20, 50, 100]
-metrics = [SqEuclidean, CosineDist]
+num_points = [1000]
+dims = [50]
+num_neighbs = [20]
+metrics = [SqEuclidean]
 
 for graph in knn_graph_types
     for dtype in dtypes
@@ -24,12 +31,27 @@ for graph in knn_graph_types
                     if k ≥ np
                         continue
                     end
+                    prepath = [string(graph)]
+                    postpath = [string(dtype), "N="*string(np), "D="*string(d), "K="*string(k)]
                     for metric in metrics
-                        prepath = [string(graph)]
-                        postpath = [string(dtype), "N="*string(np), "D="*string(d), "K="*string(k), string(metric)]
-                        suite[vcat(prepath, ["construction"], postpath)] = 
+                        suite[vcat(prepath, ["construction"], postpath, [string(metric)])] = 
                             @benchmarkable $(graph)($(data), $k, $(metric()))
-                        
+
+                        g = graph(data, k, metric())
+                        es = shuffle!(collect(edges(g)))[1:k]
+
+                        suite[vcat(prepath, ["has_edge true"], postpath, [string(metric)])] = 
+                            @benchmarkable graph_has_edges($g, $es)
+
+                        es2 = similar(es)
+                        for e in es
+                            _e = deepcopy(e)
+                            _e.weight = rand(typeof(weight(e)))
+                            push!(es2, _e)
+                        end
+
+                        suite[vcat(prepath, ["has_edge false"], postpath, [string(metric)])] =
+                            @benchmarkable graph_has_edges($g, $es2)
                     end
                 end
             end
