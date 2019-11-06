@@ -18,12 +18,13 @@ function HeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: Abstra
     U = result_type(metric, data[1], data[1])
     HeapType = BinaryMaxHeap{HeapKNNGraphEdge{typeof(k), U}}
     knn_heaps = HeapType[HeapType() for _ in 1:np]
-    for i in 1:np
+    # create approximate knn heaps for each point
+    for i in eachindex(data)
         k_idxs = sample_neighbors(np, k, exclude=[i])
         for j in k_idxs
             dist = evaluate(metric, data[i], data[j])
             # calculate reverese distance if dist measure is not symmetric
-            rev_dist = typeof(metric) <: SemiMetric ? dist : evaluate(metric, data[j], data[i])
+            rev_dist = metric isa SemiMetric ? dist : evaluate(metric, data[j], data[i])
             _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, dist), k)
             _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), k)
         end
