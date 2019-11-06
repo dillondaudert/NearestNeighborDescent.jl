@@ -20,8 +20,11 @@ function HeapKNNGraphEdge(src::T, dst::T, weight::U, flag::Bool) where {T<:Integ
 end
 HeapKNNGraphEdge(s, d, w) = HeapKNNGraphEdge(s, d, w, true)
 
+function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U <: AbstractFloat}
+    return src(a) == src(b) && dst(a) == dst(b) && isapprox(weight(a), weight(b); atol=eps(U))
+end
 function Base.:(==)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge)
-    return src(a) == src(b) && dst(a) == dst(b) && weight(a) == weight(b) && flag(a) == flag(b)
+    return src(a) == src(b) && dst(a) == dst(b) && weight(a) == weight(b)
 end
 
 Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
