@@ -6,11 +6,11 @@ using Distances
 using BenchmarkTools
 using Random
 
-function graph_has_edges(graph, es)
-    for e in es
-        has_edge(graph, e)
-    end
-end
+#function graph_has_edges(graph, _edges)
+#    for e in _edges
+#        has_edge(graph, e)
+#    end
+#end
 
 suite = BenchmarkGroup()
 
@@ -37,21 +37,21 @@ for graph in knn_graph_types
                         suite[vcat(prepath, ["construction"], postpath, [string(metric)])] = 
                             @benchmarkable $(graph)($(data), $k, $(metric()))
 
-                        g = graph(data, k, metric())
-                        es = shuffle!(collect(edges(g)))[1:k]
+                        #g = graph(data, k, metric())
+                        #es = shuffle!(collect(edges(g)))[1:k]
 
-                        suite[vcat(prepath, ["has_edge true"], postpath, [string(metric)])] = 
-                            @benchmarkable graph_has_edges($g, $es)
+                        #suite[vcat(prepath, ["has_edge true"], postpath, [string(metric)])] = 
+                        #    @benchmarkable graph_has_edges($g, $es)
 
-                        es2 = similar(es)
-                        for e in es
-                            _e = deepcopy(e)
-                            _e.weight = rand(typeof(weight(e)))
-                            push!(es2, _e)
-                        end
+                        #es2 = similar(es)
+                        #for e in es
+                        #    _e = deepcopy(e)
+                        #    _e.weight = rand(typeof(weight(e)))
+                        #    push!(es2, _e)
+                        #end
 
-                        suite[vcat(prepath, ["has_edge false"], postpath, [string(metric)])] =
-                            @benchmarkable graph_has_edges($g, $es2)
+                        #suite[vcat(prepath, ["has_edge false"], postpath, [string(metric)])] =
+                        #    @benchmarkable graph_has_edges($g, $es2)
                     end
                 end
             end
