@@ -29,6 +29,8 @@ end
 
 Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
 
+Base.eltype(e::HeapKNNGraphEdge) = eltype(src(e))
+
 flag(e::HeapKNNGraphEdge) = e.flag
 weight(e::HeapKNNGraphEdge) = e.weight
 # lightgraphs interface

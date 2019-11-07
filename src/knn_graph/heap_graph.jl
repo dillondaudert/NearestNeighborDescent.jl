@@ -150,18 +150,18 @@ LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v
     add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
 
 Try to add an edge `e`, indicating a new candidate nearest neighbor `e.dest` for
-vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `0`) if
-`e` is already in the heap, if `e.weight > top(heap).weight`. Otherwise return `1`.
-If `length(heap) > K` after pushing, `pop` the largest candidate.
+vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `false`) if
+`e` is already in the heap or if `e.weight > top(heap).weight`. Otherwise return `true`.
 """
 function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
-    if e < top(g._knn_heaps[src(e)]) && !has_edge(g, e)
-        push!(g._knn_heaps[src(e)], e)
+    if e < top(g._knn_heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+        # we know this edge is smaller than the top, so we can start by removing that
         pop!(g._knn_heaps[src(e)])
-        return 1
+        push!(g._knn_heaps[src(e)], e)
+        return true
     end
-    return 0
+    return false
 end
 
 # KNNGraphs interface methods
