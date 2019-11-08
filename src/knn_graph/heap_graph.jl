@@ -168,3 +168,24 @@ end
 function knn_diameter(g::HeapKNNGraph{V}, v::V) where V
     return 2 * weight(top(g._knn_heaps[v]))
 end
+
+function edge_indices(g::HeapKNNGraph{V, K}) where {V, K}
+    return CartesianIndices((length(g._knn_heaps), K))
+end
+
+function get_edge(g::HeapKNNGraph{V}, i::V, j::V) where V
+    return g._knn_heaps[i].valtree[j]
+end
+
+# helper functions
+"""
+Update the flag of the edge at the given indices. Since the flags don't influence
+the edge ordering, this can't invalidate the heap invariant.
+"""
+function update_flag!(g::HeapKNNGraph{V}, i::V, j::V, flag::Bool) where V
+    edge = g._knn_heaps[i].valtree[j]
+    newedge = edgetype(g)(src(edge), dst(edge), weight(edge), flag)
+    g._knn_heaps[i].valtree[j] = newedge
+    return newedge 
+end
+

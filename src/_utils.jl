@@ -18,11 +18,12 @@ For the NNDescent algorithm, these are separated into the old and new neighbors.
 function _get_neighbors(graph::HeapKNNGraph{V}, sample_rate) where V
     old_neighbors = [V[] for _ in 1:nv(graph)]
     new_neighbors = [V[] for _ in 1:nv(graph)]
-    for e in edges(graph)
+    for ind in edge_indices(graph)
+        @inbounds e = get_edge(graph, ind[1], ind[2])
         if flag(e) # isnew(e) => new edges haven't participated in local join
             if rand() ≤ sample_rate 
                 # mark sampled new forward neighbors as old
-                e.flag = false
+                @inbounds e = update_flag!(graph, ind[1], ind[2], false)
                 push!(new_neighbors[src(e)], dst(e))
                 push!(new_neighbors[dst(e)], src(e))
             end

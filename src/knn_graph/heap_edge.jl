@@ -4,7 +4,7 @@
 
 A weighted graph edge along with a flag
 """
-mutable struct HeapKNNGraphEdge{T<:Integer, U<:Real} <: AbstractEdge{T}
+struct HeapKNNGraphEdge{T<:Integer, U<:Real} <: AbstractEdge{T}
     src::T
     dst::T
     weight::U
