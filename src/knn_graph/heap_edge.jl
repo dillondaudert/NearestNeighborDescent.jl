@@ -28,6 +28,7 @@ function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where 
 end
 
 Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
+Base.isless(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = a < b
 
 Base.eltype(e::HeapKNNGraphEdge) = eltype(src(e))
 

@@ -19,7 +19,7 @@ function _get_neighbors(graph::HeapKNNGraph{V}, sample_rate) where V
     old_neighbors = [V[] for _ in 1:nv(graph)]
     new_neighbors = [V[] for _ in 1:nv(graph)]
     for ind in edge_indices(graph)
-        @inbounds e = get_edge(graph, ind[1], ind[2])
+        @inbounds e = node_edge(graph, ind[1], ind[2])
         if flag(e) # isnew(e) => new edges haven't participated in local join
             if rand() ≤ sample_rate 
                 # mark sampled new forward neighbors as old

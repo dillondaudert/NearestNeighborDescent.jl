@@ -25,6 +25,7 @@ include("heap_utils.jl")
 
 # export public interface
 export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge
-export flag, knn_diameter, weight, edge_indices, get_edge, update_flag!
+export knn_diameter, knn_matrices
+export flag, weight, edge_indices, node_edge, node_edges, update_flag!
 
 end
