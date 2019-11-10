@@ -25,11 +25,9 @@ function do_iter(graph, data, metric, sample_rate, true_indices)
     return c, (min_diam, mean_diam, med_diam, max_diam), nne, rec
 end
 
-function join_with_history(data, k, metric, sample_rate)
+function join_with_history(data, k, metric, sample_rate, true_indices)
     graph = HeapKNNGraph(data, k, metric)
     indices = knn_matrices(graph)[1]
-    true_graph = NearestNeighborDescent.brute_knn(data, metric, k)
-    true_indices = getindex.(true_graph, 1)
     count_history = []
     diam_history = []
     new_edge_history = []
@@ -50,14 +48,19 @@ function join_with_history(data, k, metric, sample_rate)
         push!(recall_history, "iter_$iter"=>rec)
         iter += 1
     end
-    return count_history, diam_history, new_edge_history
+    return count_history, diam_history, new_edge_history, recall_history
 end
 
 mnist_x_arr = [col for col in
-    eachcol(MNIST.convert2features(MNIST.traintensor(Float64)))]
+    eachcol(MNIST.convert2features(MNIST.traintensor(Float64, 1:10000)))]
 k = 20
 metric = SqEuclidean()
 
-c_hist, d_hist, e_hist = join_with_history(mnist_x_arr, k, metric, 1)
+true_graph = NearestNeighborDescent.brute_knn(mnist_x_arr, metric, k)
+true_indices = getindex.(true_graph, 1)
 
-c_hist_2, d_hist_2, e_hist_2 = join_with_history(mnist_x_arr, k, metric, .25)
+c_hist_100, d_hist_100, e_hist_100, r_hist_100 =
+    join_with_history(mnist_x_arr, k, metric, 1, true_indices)
+
+c_hist_25, d_hist_25, e_hist_25, r_hist_25 =
+    join_with_history(mnist_x_arr, k, metric, .25, true_indices)
