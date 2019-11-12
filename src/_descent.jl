@@ -78,13 +78,50 @@ function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate =
     return c
 end
 
-"""
-    local_join(graph, data, metric) -> graph′, num_updates
 
-Similar to local_join!(), except there is no mutation of the original graph `g`. This returns the
-graph resulting from the local join operation, as well as the number of updates made by that local
-join.
-"""
-function local_join(g::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
-
+function local_join!(g::LockHeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
+    old_neighbors, new_neighbors = _get_neighbors(graph, sample_rate)
+    count = Threads.Atomic{Int}(0)
+    # compute local join
+    @sync begin
+        for v in vertices(graph)
+            for p in new_neighbors[v]
+                for q in (q_ for q_ in new_neighbors[v] if p < q_)
+                    # both new
+                    # spawn task for forward
+                    Threads.@spawn begin
+                        weight = evaluate(metric, data[p], data[q])
+                        # spawn task for reverse
+                        Threads.@spawn begin
+                            if !(metric isa SemiMetric) # not symmetric
+                                weight = evaluate(metric, data[q], data[p])
+                            end
+                            res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                            Threads.atomic_add!(count, res)
+                        end
+                        res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                        Threads.atomic_add!(count, res)
+                    end
+                end
+                for q in (q_ for q_ in old_neighbors[v] if p != q_)
+                    # one new, one old
+                    # spawn task for forward
+                    Threads.@spawn begin
+                        weight = evaluate(metric, data[p], data[q])
+                        # spawn task for reverse
+                        Threads.@spawn begin
+                            if !(metric isa SemiMetric) # not symmetric
+                                weight = evaluate(metric, data[q], data[p])
+                            end
+                            res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                            Threads.atomic_add!(count, res)
+                        end
+                        res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                        Threads.atomic_add!(count, res)
+                    end
+                end
+            end
+        end
+    end # end sync
+    return count[]
 end

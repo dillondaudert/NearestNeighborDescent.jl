@@ -8,7 +8,7 @@ struct LockHeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
     _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     _heap_locks::Vector{ReentrantLock}
 end
-function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: AbstractVector}
+function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {V, D <: AbstractVector{V}}
 
     # assert some invariants
     k > 0 || error("LockHeapKNNGraph needs positive `k`")
@@ -20,14 +20,40 @@ function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: Ab
     knn_heaps = HeapType[HeapType() for _ in 1:np]
     heap_locks = ReentrantLock[ReentrantLock() for _ in 1:np]
     # initialize approx knn heaps randomly
-    Threads.@threads for i in eachindex(data)
+    @sync for i in eachindex(data)
         k_idxs = sample_neighbors(np, k, exclude=[i])
         for j in k_idxs
-            dist = evaluate(metric, data[i], data[j])
-            rev_dist = metric isa SemiMetric ? dist : evaluate(metric, data[j], data[i])
-            _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, dist), k)
-            _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), k)
+            Threads.@spawn begin
+                weight = evaluate(metric, data[i], data[j])
+                Threads.@spawn begin
+                    if !(metric isa SemiMetric)
+                        weight = evaluate(metric, data[j], data[i])
+                    end
+                    with_lock(heap_locks[j]) do
+                        _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, weight), k)
+                    end
+                end
+                with_lock(heap_locks[i]) do
+                    _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, weight), k)
+                end
+            end
         end
     end
     return LockHeapKNNGraph{typeof(k), k, U}(knn_heaps, heap_locks)
+end
+
+"""
+A context manager that will continually attempt acquire `lock`, yielding if
+it cannot. Once the lock is acquired, `fn` is executed, after which the lock
+is released.
+"""
+function with_lock(fn, lock::Base.AbstractLock)
+    while true
+        if trylock(lock)
+            break
+        end
+        yield()
+    end
+    fn()
+    unlock(lock)
 end
