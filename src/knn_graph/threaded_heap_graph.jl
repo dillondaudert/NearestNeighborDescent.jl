@@ -45,7 +45,7 @@ Similar to `inneighbors(g::HeapKNNGraph, v)`, except it acquires locks for the n
 as it iterates in order for this to be thread-safe.
 
 """
-@inline function LightGraphs.inneighbors(g::HeapKNNGraph{V}, v::V) where V
+@inline function LightGraphs.inneighbors(g::LockHeapKNNGraph{V}, v::V) where V
     neighbs = V[]
     for i in nv(g)
         lock(g._heap_locks[i]) do
@@ -65,7 +65,7 @@ end
 Similar to `outneighbors(g::HeapKNNGraph, v)`, except locks the neighbor heap before collecting
 to make this thread-safe.
 """
-@inline function LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V
+@inline function LightGraphs.outneighbors(g::LockHeapKNNGraph{V}, v::V) where V
     neighbs = lock(g._heap_locks[v]) do
         dst.(g._knn_heaps[v].valtree)
     end
