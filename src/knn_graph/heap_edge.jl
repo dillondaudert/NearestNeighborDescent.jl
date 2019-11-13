@@ -20,18 +20,18 @@ function HeapKNNGraphEdge(src::T, dst::T, weight::U, flag::Bool) where {T<:Integ
 end
 HeapKNNGraphEdge(s, d, w) = HeapKNNGraphEdge(s, d, w, true)
 
-function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U <: AbstractFloat}
+@inline function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U <: AbstractFloat}
     return src(a) == src(b) && dst(a) == dst(b) && isapprox(weight(a), weight(b); atol=eps(U))
 end
-function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U}
+@inline function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U}
     return src(a) == src(b) && dst(a) == dst(b) && weight(a) == weight(b)
 end
 
-Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
+@inline Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
 
-flag(e::HeapKNNGraphEdge) = e.flag
-weight(e::HeapKNNGraphEdge) = e.weight
+@inline flag(e::HeapKNNGraphEdge) = e.flag
+@inline weight(e::HeapKNNGraphEdge) = e.weight
 # lightgraphs interface
-LightGraphs.src(e::HeapKNNGraphEdge) = e.src
-LightGraphs.dst(e::HeapKNNGraphEdge) = e.dst
-LightGraphs.reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))
+@inline LightGraphs.src(e::HeapKNNGraphEdge) = e.src
+@inline LightGraphs.dst(e::HeapKNNGraphEdge) = e.dst
+@inline LightGraphs.reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))
