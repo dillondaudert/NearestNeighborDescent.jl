@@ -150,21 +150,88 @@ complexity of `𝒪(K)`.
     add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
 
 Try to add an edge `e`, indicating a new candidate nearest neighbor `e.dest` for
-vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `0`) if
-`e` is already in the heap, if `e.weight > top(heap).weight`. Otherwise return `1`.
-If `length(heap) > K` after pushing, `pop` the largest candidate.
+vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `false`) if
+`e` is already in the heap or if `e.weight > top(heap).weight`. Otherwise return `true`.
 """
 function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
-    if e < top(g._knn_heaps[src(e)]) && !has_edge(g, e)
-        push!(g._knn_heaps[src(e)], e)
+    if e < top(g._knn_heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+        # we know this edge is smaller than the top, so we can start by removing that
         pop!(g._knn_heaps[src(e)])
-        return 1
+        push!(g._knn_heaps[src(e)], e)
+        return true
     end
-    return 0
+    return false
 end
 
-# KNNGraphs interface methods
+# KNNGraphs public methods
+"""
+    knn_diameter(graph, v) -> diameter
+
+Return the diameter of the set of KNNs of vertex `v`.
+"""
 function knn_diameter(g::HeapKNNGraph{V}, v::V) where V
     return 2 * weight(top(g._knn_heaps[v]))
 end
+
+"""
+    knn_matrices(graph) -> indices, distances
+
+Return the indices and distances of the approximate KNNs as dense
+matrices where indices[j, i] and distances[j, i] are the index of
+and distance to node i's jth nearest neighbor, respectively.
+"""
+function knn_matrices(g::HeapKNNGraph{V, K, U}) where {V, K, U}
+    indices = Matrix{V}(undef, K, nv(g))
+    distances = Matrix{U}(undef, K, nv(g))
+    for i in vertices(g)
+        i_edges = sort!(node_edges(g, i))
+        for (j, e) in enumerate(i_edges)
+            indices[j, i] = dst(e)
+            distances[j, i] = weight(e)
+        end
+    end
+    return indices, distances
+end
+
+"""
+    edge_indices(graph) -> CartesianIndices
+
+Return the indices of the KNNs (i, j). Can be used with 
+`node_edge(graph, i, j)`.
+"""
+function edge_indices(g::HeapKNNGraph{V, K}) where {V, K}
+    return CartesianIndices((length(g._knn_heaps), K))
+end
+
+"""
+    node_edge(graph, i, j) -> edge
+
+Return the jth outgoing edge from node i. No ordering of the
+edges is guaranteed; in particular, node_edge(graph, i, 1) is not
+guaranteed to be the edge to i's nearest neighbor.
+"""
+@inline function node_edge(g::HeapKNNGraph{V}, i::V, j::V) where V
+    return g._knn_heaps[i].valtree[j]
+end
+
+"""
+    node_edges(graph, i) -> edges
+
+Return all the outgoing edges from node i in an arbitrary order.
+"""
+@inline function node_edges(g::HeapKNNGraph{V, K}, i::V) where {V, K}
+    return edgetype(g)[node_edge(g, i, j) for j in one(V):K]
+end
+
+"""
+Update the flag of the edge at the given indices. Since the flags don't influence
+the edge ordering, this can't invalidate the heap invariant.
+"""
+function update_flag!(g::HeapKNNGraph{V}, i::V, j::V, flag::Bool) where V
+    edge = g._knn_heaps[i].valtree[j]
+    newedge = edgetype(g)(src(edge), dst(edge), weight(edge), flag)
+    g._knn_heaps[i].valtree[j] = newedge
+    return newedge 
+end
+

@@ -13,8 +13,12 @@ include("utils.jl")
 include("nn_descent.jl")
 include("brute_knn.jl")
 
-export KNNGraphs
+# main exports
 export DescentGraph
 export nndescent, search
+# KNNGraphs exports
+export KNNGraphs
+export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge
+export knn_diameter, knn_matrices
 
 end # module

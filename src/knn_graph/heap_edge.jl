@@ -4,7 +4,7 @@
 
 A weighted graph edge along with a flag
 """
-mutable struct HeapKNNGraphEdge{T<:Integer, U<:Real} <: AbstractEdge{T}
+struct HeapKNNGraphEdge{T<:Integer, U<:Real} <: AbstractEdge{T}
     src::T
     dst::T
     weight::U
@@ -27,7 +27,10 @@ end
     return src(a) == src(b) && dst(a) == dst(b) && weight(a) == weight(b)
 end
 
-@inline Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
+Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
+Base.isless(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = a < b
+
+Base.eltype(e::HeapKNNGraphEdge) = eltype(src(e))
 
 @inline flag(e::HeapKNNGraphEdge) = e.flag
 @inline weight(e::HeapKNNGraphEdge) = e.weight
