@@ -79,49 +79,35 @@ function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate =
 end
 
 
-function local_join!(g::LockHeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
+function local_join!(graph::LockHeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
     old_neighbors, new_neighbors = _get_neighbors(graph, sample_rate)
     count = Threads.Atomic{Int}(0)
     # compute local join
-    @sync begin
-        for v in vertices(graph)
-            for p in new_neighbors[v]
-                for q in (q_ for q_ in new_neighbors[v] if p < q_)
-                    # both new
-                    # spawn task for forward
-                    Threads.@spawn begin
-                        weight = evaluate(metric, data[p], data[q])
-                        # spawn task for reverse
-                        Threads.@spawn begin
-                            if !(metric isa SemiMetric) # not symmetric
-                                weight = evaluate(metric, data[q], data[p])
-                            end
-                            res = add_edge!(graph, edgetype(graph)(q, p, weight))
-                            Threads.atomic_add!(count, res)
-                        end
-                        res = add_edge!(graph, edgetype(graph)(p, q, weight))
-                        Threads.atomic_add!(count, res)
-                    end
+    Threads.@threads for v in vertices(graph)
+        for p in new_neighbors[v]
+            for q in (q_ for q_ in new_neighbors[v] if p < q_)
+                # both new
+                weight = evaluate(metric, data[p], data[q])
+                res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                Threads.atomic_add!(count, Int(res))
+                if !(metric isa SemiMetric) # not symmetric
+                    weight = evaluate(metric, data[q], data[p])
                 end
-                for q in (q_ for q_ in old_neighbors[v] if p != q_)
-                    # one new, one old
-                    # spawn task for forward
-                    Threads.@spawn begin
-                        weight = evaluate(metric, data[p], data[q])
-                        # spawn task for reverse
-                        Threads.@spawn begin
-                            if !(metric isa SemiMetric) # not symmetric
-                                weight = evaluate(metric, data[q], data[p])
-                            end
-                            res = add_edge!(graph, edgetype(graph)(q, p, weight))
-                            Threads.atomic_add!(count, res)
-                        end
-                        res = add_edge!(graph, edgetype(graph)(p, q, weight))
-                        Threads.atomic_add!(count, res)
-                    end
+                res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                Threads.atomic_add!(count, Int(res))
+            end
+            for q in (q_ for q_ in old_neighbors[v] if p != q_)
+                # one new, one old
+                weight = evaluate(metric, data[p], data[q])
+                res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                Threads.atomic_add!(count, Int(res))
+                if !(metric isa SemiMetric) # not symmetric
+                    weight = evaluate(metric, data[q], data[p])
                 end
+                res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                Threads.atomic_add!(count, Int(res))
             end
         end
-    end # end sync
+    end
     return count[]
 end

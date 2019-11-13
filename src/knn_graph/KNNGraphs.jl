@@ -20,8 +20,8 @@ LightGraphs.is_directed(::ApproximateKNNGraph) = true
 
 include("abstract.jl")
 include("heap_edge.jl")
-include("heap_graph.jl")
 include("threaded_heap_graph.jl")
+include("heap_graph.jl")
 include("heap_utils.jl")
 
 # export public interface

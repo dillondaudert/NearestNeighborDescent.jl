@@ -18,7 +18,7 @@ export DescentGraph
 export nndescent, search
 # KNNGraphs exports
 export KNNGraphs
-export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge
+export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge, LockHeapKNNGraph
 export knn_diameter, knn_matrices
 
 end # module
