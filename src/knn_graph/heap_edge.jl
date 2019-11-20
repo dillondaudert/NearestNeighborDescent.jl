@@ -21,16 +21,20 @@ end
 HeapKNNGraphEdge(s, d, w) = HeapKNNGraphEdge(s, d, w, true)
 
 @inline function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U <: AbstractFloat}
-    return src(a) == src(b) && dst(a) == dst(b) && isapprox(weight(a), weight(b); atol=eps(U))
+    return src(a) == src(b) && dst(a) == dst(b) && isapprox(weight(a), weight(b))
 end
 @inline function Base.:(==)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U}
     return src(a) == src(b) && dst(a) == dst(b) && weight(a) == weight(b)
 end
 
-Base.:(<)(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = weight(a) < weight(b)
+@inline function Base.:(<)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U<:AbstractFloat}
+    # for floats, check that a<b AND that they aren't approximately equal
+    return weight(a) < weight(b) && !isapprox(weight(a), weight(b))
+end
+@inline Base.:(<)(a::HeapKNNGraphEdge{V, U}, b::HeapKNNGraphEdge{V, U}) where {V, U} = weight(a) < weight(b)
 Base.isless(a::HeapKNNGraphEdge, b::HeapKNNGraphEdge) = a < b
 
-Base.eltype(e::HeapKNNGraphEdge) = eltype(src(e))
+Base.eltype(e::HeapKNNGraphEdge{V}) where V = V
 
 @inline flag(e::HeapKNNGraphEdge) = e.flag
 @inline weight(e::HeapKNNGraphEdge) = e.weight
