@@ -8,6 +8,21 @@ struct LockHeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
     _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     _heap_locks::Vector{ReentrantLock}
 end
+function LockHeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{U}) where {V <: Integer,
+                                                                                           U <: Real}
+    n_neighbors = size(indices, 1)
+    n_points = size(indices, 2)
+    size(indices) == size(distances) || error("`indices` and `distances` must have same shape")
+    n_neighbors < n_points || error("`Must have more columns than rows`")
+    # ...
+    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{V, U}}
+    knn_heaps = HeapType[HeapType() for _ in 1:n_points]
+    heap_locks = ReentrantLock[ReentrantLock() for _ in 1:n_points]
+    for v in 1:n_points, i in 1:n_neighbors
+        _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
+    end
+    return LockHeapKNNGraph{V, n_neighbors, U}(knn_heaps, heap_locks)
+end
 function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {V, D <: AbstractVector{V}}
 
     # assert some invariants
