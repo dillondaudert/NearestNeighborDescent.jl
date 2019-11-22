@@ -26,9 +26,18 @@
     end
 
     @testset "Constructor Tests" begin
+        test_inds = Int[4 3 2 1; 2 1 4 3]
+        test_dsts = Float64[1. 2. 3. 4.; 2. 3. 4. 5.]
+        g = HeapKNNGraph(test_inds, test_dsts)
+        @test g isa HeapKNNGraph{Int, 2, Float64}
+        @test is_valid_knn_graph(g)
+
+        @test_throws ErrorException HeapKNNGraph(test_inds, rand(3, 4))
+
         k = 10
         n = length(small_data_f64)
         g = HeapKNNGraph(small_data_f64, k, Euclidean())
+        @test g isa HeapKNNGraph{Int, 10, Float64}
         @test is_valid_knn_graph(g)
     end
     @testset "LightGraphs interface tests" begin

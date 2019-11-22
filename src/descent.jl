@@ -48,7 +48,7 @@ updates took place during the local join.
 """
 function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
     # find in and out neighbors - old neighbors have already participated in a previous local join
-    old_neighbors, new_neighbors = _get_neighbors(graph, sample_rate)
+    old_neighbors, new_neighbors = get_neighbors(graph, sample_rate)
     c = 0
     # compute local join
     for v in vertices(graph)
@@ -80,7 +80,7 @@ end
 
 
 function local_join!(graph::LockHeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
-    old_neighbors, new_neighbors = _get_neighbors(graph, sample_rate)
+    old_neighbors, new_neighbors = get_neighbors(graph, sample_rate)
     count = Threads.Atomic{Int}(0)
     # compute local join
     Threads.@threads for v in vertices(graph)
@@ -113,10 +113,53 @@ function local_join!(graph::LockHeapKNNGraph, data, metric::PreMetric; sample_ra
 end
 
 """
-    search(graph, queries, n_neighbors; max_candidates) -> indices, distances
+Get the neighbors of each point in a KNN graph `graph` as sets of integer ids.
 
-Search the kNN `graph` for the nearest neighbors of the points in `queries`.
-`max_candidates` controls how large the candidate queue should be (min `n_neighbors`);
-larger values increase accuracy at the cost of speed.
+For the NNDescent algorithm, these are separated into the old and new neighbors.
 """
-function search end
+function get_neighbors(graph::ApproximateKNNGraph{V}, sample_rate) where V
+    old_neighbors = [V[] for _ in 1:nv(graph)]
+    new_neighbors = [V[] for _ in 1:nv(graph)]
+    for ind in edge_indices(graph)
+        @inbounds e = node_edge(graph, ind[1], ind[2])
+        if flag(e) # isnew(e) => new edges haven't participated in local join
+            if rand() ≤ sample_rate
+                # mark sampled new forward neighbors as old
+                @inbounds e = update_flag!(graph, ind[1], ind[2], false)
+                push!(new_neighbors[src(e)], dst(e))
+                push!(new_neighbors[dst(e)], src(e))
+            end
+        else # old neighbors
+            # always include old forward
+            push!(old_neighbors[src(e)], dst(e))
+            # sample old reverse neighbors
+            if rand() ≤ sample_rate
+                push!(old_neighbors[dst(e)], src(e))
+            end
+        end
+    end
+    return (unique!).((sort!).(old_neighbors)), (unique!).((sort!).(new_neighbors))
+end
+
+function get_neighbors!(graph::HeapKNNGraph{V}, sample_rate, old_neighbors, new_neighbors) where V
+    (empty!).(old_neighbors)
+    (empty!).(new_neighbors)
+    for e in edges(graph)
+        if flag(e) # isnew(e) => new edges haven't participated in local join
+            if rand() ≤ sample_rate
+                # mark sampled new forward neighbors as old
+                e.flag = false
+                push!(new_neighbors[src(e)], dst(e))
+                push!(new_neighbors[dst(e)], src(e))
+            end
+        else # old neighbors
+            # always include old forward
+            push!(old_neighbors[src(e)], dst(e))
+            # sample old reverse neighbors
+            if rand() ≤ sample_rate
+                push!(old_neighbors[dst(e)], src(e))
+            end
+        end
+    end
+    return (unique!).((sort!).(old_neighbors)), (unique!).((sort!).(new_neighbors))
+end

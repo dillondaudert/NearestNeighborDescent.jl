@@ -1,4 +1,4 @@
 
-@testset "get_neighbors tests" begin
+@testset "utils tests" begin
 
 end

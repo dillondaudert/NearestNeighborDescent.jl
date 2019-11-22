@@ -1,11 +1,11 @@
 
 @testset "descent tests" begin
 
-    @testset "local_join tests" begin
+    @testset "get_neighbors tests" begin
 
     end
 
-    @testset "search tests" begin
+    @testset "local_join tests" begin
 
     end
 

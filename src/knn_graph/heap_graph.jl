@@ -9,27 +9,56 @@ efficient updates of the candidate neighbors.
 struct HeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
     _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
 end
-function HeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {D <: AbstractVector}
-    # assert some invariants
-    k > 0 || error("HeapKNNGraph needs positive `k`")
-    length(data) > k || error("HeapKNNGraph needs `length(data) > k`")
 
-    np = length(data)
+"""
+    HeapKNNGraph(indices, distances)
+
+Create a HeapKNNGraph from `KxN` matrices of the indices and distances, where `indices[i, v]` and
+`distances[i, v]` are the index and distance to node `v`s `i`th candidate neighbor. Note that each
+column of `indices` cannot have duplicate entries, but they need not be sorted by distance.
+"""
+function HeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{U}) where {V <: Integer,
+                                                                                       U <: Real}
+    n_neighbors = size(indices, 1)
+    n_points = size(indices, 2)
+    size(indices) == size(distances) || error("`indices` and `distances` must have same shape")
+    n_neighbors < n_points || error("`Must have more columns than rows`")
+    # ...
+    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{V, U}}
+    knn_heaps = HeapType[HeapType() for _ in 1:n_points]
+    for v in 1:n_points, i in 1:n_neighbors
+        _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
+    end
+    return HeapKNNGraph{V, n_neighbors, U}(knn_heaps)
+end
+
+"""
+    HeapKNNGraph(data, n_neighbors, metric)
+
+Create a HeapKNNGraph by randomly sampling `n_neighbors` for each point and using `metric`
+to calculate weights.
+"""
+function HeapKNNGraph(data::D, n_neighbors::Integer, metric::PreMetric) where {D <: AbstractVector}
+    # assert some invariants
+    n_neighbors > 0 || error("HeapKNNGraph needs positive `n_neighbors`")
+    length(data) > n_neighbors || error("HeapKNNGraph needs `length(data) > n_neighbors`")
+
+    n_points = length(data)
     U = result_type(metric, data[1], data[1])
-    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{typeof(k), U}}
-    knn_heaps = HeapType[HeapType() for _ in 1:np]
+    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{typeof(n_neighbors), U}}
+    knn_heaps = HeapType[HeapType() for _ in 1:n_points]
     # create approximate knn heaps for each point
     for i in eachindex(data)
-        k_idxs = sample_neighbors(np, k, exclude=[i])
+        k_idxs = sample_neighbors(n_points, n_neighbors, exclude=[i])
         for j in k_idxs
             dist = evaluate(metric, data[i], data[j])
             # calculate reverese distance if dist measure is not symmetric
             rev_dist = metric isa SemiMetric ? dist : evaluate(metric, data[j], data[i])
-            _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, dist), k)
-            _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), k)
+            _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, dist), n_neighbors)
+            _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), n_neighbors)
         end
     end
-    return HeapKNNGraph{typeof(k), k, U}(knn_heaps)
+    return HeapKNNGraph{typeof(n_neighbors), n_neighbors, U}(knn_heaps)
 end
 
 # lightgraphs interface

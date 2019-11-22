@@ -8,6 +8,7 @@ include("knn_graph/KNNGraphs.jl")
 using .KNNGraphs
 include("utils.jl")
 include("descent.jl")
+include("search.jl")
 
 export nndescent, search
 # KNNGraphs exports
