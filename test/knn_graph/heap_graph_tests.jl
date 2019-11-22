@@ -26,8 +26,10 @@
     end
 
     @testset "Constructor Tests" begin
-        # TODO: HeapKNNGraph(data, k, metric)
-        @test_broken false
+        k = 10
+        n = length(small_data_f64)
+        g = HeapKNNGraph(small_data_f64, k, Euclidean())
+        @test is_valid_knn_graph(g)
     end
     @testset "LightGraphs interface tests" begin
         # test LightGraphs interface methods exist on HeapKNNGraph
@@ -44,7 +46,6 @@
         k = 10
         n = length(small_data_f64)
         g = HeapKNNGraph(small_data_f64, k, Euclidean())
-        # TODO: 
         # edges
         @test length(collect(edges(g))) == n*k
         # vertices
@@ -76,16 +77,59 @@
         # case: fail to add edge bc it exists with a different weight
         e2 = HeapKNNGraphEdge(src(e), dst(e), rand(), flag(e))
         @test !(add_edge!(g, e2))
-        w = weights(g)
-        for _i in eachindex(w)
-            global i = _i
-            w[i] == 0 && i[1] != i[2] && break
+        # find two nodes without an edge
+        function absent_edge(graph)
+            # return the index to an edge that isn't in graph
+            w = weights(graph)
+            for i in eachindex(w)
+                w[i] == 0 && i[1] != i[2] && return i
+            end
+            error("Shouldn't get here")
         end
-        e3 = HeapKNNGraphEdge(i[2], i[1], 0.0)
+        ind = absent_edge(g)
+        # test has_edge and add_edge!
+        e3 = HeapKNNGraphEdge(ind[2], ind[1], 0.0)
         @test !has_edge(g, e3)
         @test is_valid_knn_graph(g)
         @test add_edge!(g, e3)
         @test is_valid_knn_graph(g)
+    end
+
+    @testset "HeapKNNGraph utilities" begin
+        # knn_diameter
+        @test hasmethod(knn_diameter, (HeapKNNGraph{Int}, Int))
+        # knn_matrices
+        k = 10
+        n = length(small_data_f64)
+        g = HeapKNNGraph(small_data_f64, k, Euclidean())
+        @test hasmethod(knn_matrices, (HeapKNNGraph,))
+        inds, dists = knn_matrices(g)
+        @test size(inds) == size(dists) == (k, n)
+        @test all(issorted(col) for col in eachcol(dists))
+        for i in 1:size(inds, 2), j_idx in 1:size(inds, 1)
+            j = inds[j_idx, i]
+            @test has_edge(g, i, j)
+        end
+        # edge_indices, node_edge
+        @test length(edge_indices(g)) == n*k
+        for ind in edge_indices(g)
+            e = node_edge(g, ind[1], ind[2])
+            @test e isa HeapKNNGraphEdge
+            @test has_edge(g, e)
+        end
+        # node_edges
+        @test length(node_edges(g, 1)) == k
+        for e in node_edges(g, 1)
+            @test src(e) == 1
+            @test has_edge(g, e)
+        end
+        # update_flag!
+        @test sum((!).(flag).(e for e in edges(g))) == 0 # all true flags
+        @test flag(node_edge(g, 1, 1))
+        new_e = update_flag!(g, 1, 1, false)
+        @test !flag(new_e)
+        @test new_e === node_edge(g, 1, 1)
+        @test sum((!).(flag).(e for e in edges(g))) == 1 # one false flag
     end
 
 end

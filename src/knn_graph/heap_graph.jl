@@ -201,40 +201,43 @@ end
 """
     edge_indices(graph) -> CartesianIndices
 
-Return the indices of the KNNs (i, j). Can be used with
-`node_edge(graph, i, j)`.
+Return the indices of the KNNs for each node `v` as tuples (v, i). To be used with
+`node_edge(graph, v, i)`.
 """
 function edge_indices(g::ApproximateKNNGraph{V, K}) where {V, K}
     return CartesianIndices((nv(g), K))
 end
 
 """
-    node_edge(graph, i, j) -> edge
+    node_edge(graph, v, i) -> edge
 
-Return the jth outgoing edge from node i. No ordering of the
-edges is guaranteed; in particular, node_edge(graph, i, 1) is not
-guaranteed to be the edge to i's nearest neighbor.
+Return the ith outgoing edge from node `v`. No ordering of the
+edges is guaranteed; in particular, node_edge(graph, v, 1) is not
+guaranteed to be the edge to v's nearest neighbor.
 """
-@inline function node_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, i::V, j::V) where V
-    return g._knn_heaps[i].valtree[j]
+@inline function node_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V, i::V) where V
+    return g._knn_heaps[v].valtree[i]
 end
 
 """
-    node_edges(graph, i) -> edges
+    node_edges(graph, v) -> edges
 
-Return all the outgoing edges from node i in an arbitrary order.
+Return all the outgoing edges from node v in an arbitrary order.
 """
-@inline function node_edges(g::HeapKNNGraph{V, K}, i::V) where {V, K}
-    return edgetype(g)[node_edge(g, i, j) for j in one(V):K]
+@inline function node_edges(g::HeapKNNGraph{V, K}, v::V) where {V, K}
+    return edgetype(g)[node_edge(g, v, i) for i in one(V):K]
 end
 
 """
-Update the flag of the edge at the given indices. Since the flags don't influence
-the edge ordering, this can't invalidate the heap invariant.
+    update_flag!(graph, v, i, new_flag)
+
+Update the flag of node `v`s ith outgoing edge. Returns the new edge.
+Note that since the flags don't influence the edge ordering, this can't invalidate the heap
+invariant.
 """
-function update_flag!(g::HeapKNNGraph{V}, i::V, j::V, flag::Bool) where V
-    edge = g._knn_heaps[i].valtree[j]
-    newedge = edgetype(g)(src(edge), dst(edge), weight(edge), flag)
-    g._knn_heaps[i].valtree[j] = newedge
-    return newedge
+function update_flag!(g::HeapKNNGraph{V}, v::V, i::V, new_flag::Bool) where V
+    edge = node_edge(g, v, i)
+    new_edge = edgetype(g)(src(edge), dst(edge), weight(edge), new_flag)
+    g._knn_heaps[v].valtree[i] = new_edge
+    return new_edge
 end
