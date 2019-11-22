@@ -6,16 +6,16 @@
             n_neighbors = 4
 
             # zero neighbors
-            idxs = sample_neighbors(length(points), 0)
+            idxs = KNNGraphs.sample_neighbors(length(points), 0)
             @test length(idxs) == 0
 
             # k < n
-            idxs = sample_neighbors(length(points), n_neighbors)
+            idxs = KNNGraphs.sample_neighbors(length(points), n_neighbors)
             @test length(idxs) == n_neighbors
             @test issubset(idxs, points)
 
             # k > n
-            idxs = sample_neighbors(length(points), length(points)+5)
+            idxs = KNNGraphs.sample_neighbors(length(points), length(points)+5)
             @test length(idxs) == length(points)
         end
         @testset "sample_rate = .5 tests" begin
@@ -24,30 +24,30 @@
             ρ = .5
 
             # zero neighbors
-            idxs = sample_neighbors(length(points), 0, ρ)
+            idxs = KNNGraphs.sample_neighbors(length(points), 0, ρ)
             @test length(idxs) == 0
 
             # k < n
-            idxs = sample_neighbors(length(points), n_neighbors, ρ)
+            idxs = KNNGraphs.sample_neighbors(length(points), n_neighbors, ρ)
             @test ρ*n_neighbors ≥ length(idxs)
             @test issubset(idxs, points)
 
             # k > n
-            idxs = sample_neighbors(length(points), 2*length(points), ρ)
+            idxs = KNNGraphs.sample_neighbors(length(points), 2*length(points), ρ)
             @test length(idxs) == length(points)
         end
         @testset "exclude set tests" begin
             points = collect(1:10)
 
             # exclude 1
-            idxs = sample_neighbors(length(points),
+            idxs = KNNGraphs.sample_neighbors(length(points),
                                               length(points),
                                               exclude=[1])
             @test idxs ⊊ points
             @test !(1 ∈ idxs)
 
             # exclude all
-            idxs = sample_neighbors(length(points),
+            idxs = KNNGraphs.sample_neighbors(length(points),
                                               length(points),
                                               exclude=points)
             @test length(idxs) == 0
