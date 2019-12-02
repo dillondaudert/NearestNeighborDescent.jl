@@ -20,7 +20,7 @@ function search(graph::G,
     max_candidates ≥ 5 || error("max_candidates must be at least 5")
 
     # lists of candidates, sorted by distance
-    candidates = [BinaryMinHeap{Tuple{U, V, Bool}}() for _ in 1:length(queries)]
+    candidates = [BinaryMaxHeap{Tuple{U, V, Bool}}() for _ in 1:length(queries)]
     seen = BitVector(undef, length(data))
     for i in eachindex(queries)
         # zero out seen
@@ -45,11 +45,12 @@ function search(graph::G,
             end
         end
     end
-    return candidates
+
+    return deheap_knns(candidates, n_neighbors)
 end
 
 
-function get_next_candidate!(candidates::BinaryMinHeap{Tuple{U, V, Bool}}) where {U <: Real, V}
+function get_next_candidate!(candidates::BinaryMaxHeap{Tuple{U, V, Bool}}) where {U <: Real, V}
     min_idx = -1
     min_dist = typemax(U)
     for (i, t) in enumerate(candidates.valtree)
@@ -75,4 +76,29 @@ function init_candidates!(candidates, seen, graph, data, query, metric, max_cand
         seen[v] = true
     end
     return candidates
+end
+
+"""
+Remove the `k` nearest neighbors from each heap in `knn_heaps`.
+Return two k x length(knn_heaps) arrays for the indices and
+distances to each point's kNN.
+"""
+function deheap_knns(heaps::Vector{BinaryMaxHeap{Tuple{U, V, Bool}}}, k) where {U, V}
+
+    ids = Array{V}(undef, (k, length(heaps)))
+    dists = Array{U}(undef, (k, length(heaps)))
+
+    for i in 1:length(heaps)
+        len = length(heaps[i])
+        for j in 1:len
+            # NOTE: these are max heaps, so we only want the last k
+            node_dist, node_idx, _ = pop!(heaps[i])
+            neighbor_idx = 1 + len - j
+            if neighbor_idx <= k
+                ids[neighbor_idx, i] = node_idx
+                dists[neighbor_idx, i] = node_dist
+            end
+        end
+    end
+    return ids, dists
 end

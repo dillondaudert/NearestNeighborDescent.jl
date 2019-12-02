@@ -15,3 +15,4 @@ using Statistics
 end
 include("utils_tests.jl")
 include("descent_tests.jl")
+include("search_tests.jl")
