@@ -49,6 +49,18 @@ function search(graph::G,
     return deheap_knns(candidates, n_neighbors)
 end
 
+function search(graph::G,
+                data::D,
+                queries::D,
+                n_neighbors::Integer,
+                metric::PreMetric;
+                max_candidates=max(n_neighbors, 20),
+                ) where {V, K, U, G <: ApproximateKNNGraph{V, K, U}, D <: AbstractMatrix}
+    data_cols = [col for col in eachcol(data)]
+    query_cols = [col for col in eachcol(queries)]
+    return search(graph, data_cols, query_cols, n_neighbors, metric; max_candidates=max_candidates)
+end
+
 
 function get_next_candidate!(candidates::BinaryMaxHeap{Tuple{U, V, Bool}}) where {U <: Real, V}
     min_idx = -1

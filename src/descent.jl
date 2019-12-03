@@ -22,7 +22,7 @@ function nndescent(data::AbstractVector,
                    max_iters = 10,
                    sample_rate = 1,
                    precision = 1e-3,
-                  ) where {G <: ApproximateKNNGraph}
+                  )
 
     validate_args(data, n_neighbors, metric, max_iters, sample_rate, precision)
 
@@ -34,6 +34,17 @@ function nndescent(data::AbstractVector,
         end
     end
     return graph
+end
+
+function nndescent(data::AbstractMatrix,
+                   n_neighbors::Integer,
+                   metric::PreMetric;
+                   max_iters = 10,
+                   sample_rate = 1,
+                   precision = 1e-3,
+                  )
+    return nndescent([col for col in eachcol(data)], n_neighbors, metric;
+                     max_iters=max_iters, sample_rate=sample_rate, precision=precision)
 end
 
 """

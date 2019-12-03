@@ -1,5 +1,19 @@
 
 @testset "descent tests" begin
+    @testset "basic usage tests" begin
+        data = [rand(5) for _ in 1:20]
+        k = 4
+        metric = SqEuclidean()
+        # vector of vectors
+        nndescent(data, k, metric; max_iters=1)
+
+        # matrix
+        data = rand(5, 20)
+        nndescent(data, k, metric; max_iters=1)
+
+        @test true
+
+    end
     test_inds = Int[2 4 2 1 1;
                     5 3 4 3 4]
     test_dsts = Float64[1. 2. 3. 4. 5.;
@@ -47,7 +61,7 @@
         init_inds, init_dsts = knn_matrices(g1)
         g2 = LockHeapKNNGraph(init_inds, init_dsts)
         g1_diam = mean_knn_diameter(g1)
-        
+
         NearestNeighborDescent.local_join!(g1, data, Euclidean())
         NearestNeighborDescent.local_join!(g2, data, Euclidean())
         @test mean_knn_diameter(g1) ≤ g1_diam # test the knn diameter is nonincreasing
