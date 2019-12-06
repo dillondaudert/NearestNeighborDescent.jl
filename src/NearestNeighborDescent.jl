@@ -3,17 +3,14 @@ module NearestNeighborDescent
 using DataStructures
 using Distances
 using LightGraphs
+using Reexport
 
 include("knn_graph/KNNGraphs.jl")
-using .KNNGraphs
+@reexport using .KNNGraphs
+
 include("utils.jl")
 include("descent.jl")
 include("search.jl")
-
 export nndescent, search
-# KNNGraphs exports
-export KNNGraphs
-export ApproximateKNNGraph, HeapKNNGraph, HeapKNNGraphEdge, LockHeapKNNGraph
-export knn_diameter, knn_matrices
 
 end # module
