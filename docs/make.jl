@@ -1,14 +1,20 @@
+using Pkg;
+Pkg.activate(joinpath(@__DIR__, "..")); Pkg.instantiate()
+Pkg.activate(); Pkg.instantiate()
+
+pushfirst!(LOAD_PATH, joinpath(@__DIR__, ".."))
+
 using Documenter, NearestNeighborDescent
 
 makedocs(
-    sitename="NearestNeighborDescent.jl",
     modules=[NearestNeighborDescent],
+    sitename="NearestNeighborDescent.jl",
     pages = [
         "Home" => "index.md",
         "Basic Usage" => "basic.md",
         "KNN Graphs" => [
             "graphs.md",
-        ]
+        ],
     ],
 )
 
