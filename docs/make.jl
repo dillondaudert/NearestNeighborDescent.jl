@@ -9,11 +9,15 @@ using Documenter, NearestNeighborDescent
 makedocs(
     modules=[NearestNeighborDescent],
     sitename="NearestNeighborDescent.jl",
+    authors="Dillon Daudert",
     pages = [
         "Home" => "index.md",
         "Basic Usage" => "basic.md",
         "KNN Graphs" => [
             "graphs.md",
+        ],
+        "Reference" => [
+            "Public" => "ref/public.md",
         ],
     ],
 )
