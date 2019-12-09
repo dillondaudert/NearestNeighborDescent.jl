@@ -1,26 +1,34 @@
 # Concrete definition
 """
-    HeapKNNGraph{V, K, U}
+    HeapKNNGraph{V, K, U, D, M}
 
 A weighted, directed graph representing an approximate k-nearest neighbors graph
 using binary max heaps to store each vertex's forward edges, allowing for
 efficient updates of the candidate neighbors.
 """
-struct HeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
-    _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
+struct HeapKNNGraph{V, K, U, D, M} <: ApproximateKNNGraph{V, K, U, D, M}
+    heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
+    data::D
+    metric::M
 end
 
 """
-    HeapKNNGraph(indices, distances)
+    HeapKNNGraph(data, metric, indices, distances)
 
 Create a HeapKNNGraph from `KxN` matrices of the indices and distances, where `indices[i, v]` and
 `distances[i, v]` are the index and distance to node `v`s `i`th candidate neighbor. Note that each
 column of `indices` cannot have duplicate entries, but they need not be sorted by distance.
 """
-function HeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{U}) where {V <: Integer,
-                                                                                       U <: Real}
+function HeapKNNGraph(data::D,
+                      metric::M,
+                      indices::AbstractMatrix{V},
+                      distances::AbstractMatrix{U}) where {D <: AbstractVector,
+                                                           M <: PreMetric,
+                                                           V <: Integer,
+                                                           U <: Real}
     n_neighbors = size(indices, 1)
     n_points = size(indices, 2)
+    length(data) == size(indices, 2) || error("`indices` must have num columns equal to `length(data)`")
     size(indices) == size(distances) || error("`indices` and `distances` must have same shape")
     n_neighbors < n_points || error("`Must have more columns than rows`")
     # ...
@@ -29,7 +37,7 @@ function HeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{U}) 
     for v in 1:n_points, i in 1:n_neighbors
         _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
     end
-    return HeapKNNGraph{V, n_neighbors, U}(knn_heaps)
+    return HeapKNNGraph{V, n_neighbors, U, D, M}(knn_heaps, data, metric)
 end
 
 """
@@ -38,7 +46,8 @@ end
 Create a HeapKNNGraph by randomly sampling `n_neighbors` for each point and using `metric`
 to calculate weights.
 """
-function HeapKNNGraph(data::D, n_neighbors::Integer, metric::PreMetric) where {D <: AbstractVector}
+function HeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: AbstractVector,
+                                                                       M <: PreMetric}
     # assert some invariants
     n_neighbors > 0 || error("HeapKNNGraph needs positive `n_neighbors`")
     length(data) > n_neighbors || error("HeapKNNGraph needs `length(data) > n_neighbors`")
@@ -58,7 +67,7 @@ function HeapKNNGraph(data::D, n_neighbors::Integer, metric::PreMetric) where {D
             _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), n_neighbors)
         end
     end
-    return HeapKNNGraph{typeof(n_neighbors), n_neighbors, U}(knn_heaps)
+    return HeapKNNGraph{typeof(n_neighbors), n_neighbors, U, D, M}(knn_heaps, data, metric)
 end
 
 # lightgraphs interface
@@ -69,7 +78,7 @@ Return an iterator of the edges in this KNN graph. Note that mutating the edges
 while iterating through `edges(g)` may result in undefined behavior.
 """
 @inline function LightGraphs.edges(g::Union{HeapKNNGraph, LockHeapKNNGraph})
-    return (e for heap in g._knn_heaps for e in heap.valtree)
+    return (e for heap in g.heaps for e in heap.valtree)
 end
 
 """
@@ -78,7 +87,7 @@ end
 Return an iterator of the vertices in the KNN graph.
 """
 @inline function LightGraphs.vertices(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}) where V
-    return one(V):V(length(g._knn_heaps))
+    return one(V):V(length(g.heaps))
 end
 
 """
@@ -114,7 +123,7 @@ end
 Return true if the graph g has an edge from `s` to `d`, else false.
 """
 @inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, s, d) where V
-    for e in g._knn_heaps[s].valtree
+    for e in g.heaps[s].valtree
         if dst(e) == d
             return true
         end
@@ -128,7 +137,7 @@ Return true if `g` contains the edge `e`.
 """
 @inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}},
                                       e::HeapKNNGraphEdge{V, U}) where {V, K, U}
-    return e in g._knn_heaps[src(e)].valtree
+    return e in g.heaps[src(e)].valtree
 end
 
 """
@@ -150,7 +159,7 @@ Return the number of edges in `g`.
 
 Return the number of vertices in `g`.
 """
-@inline LightGraphs.nv(g::Union{HeapKNNGraph, LockHeapKNNGraph}) = length(g._knn_heaps)
+@inline LightGraphs.nv(g::Union{HeapKNNGraph, LockHeapKNNGraph}) = length(g.heaps)
 
 """
     inneighbors(g::HeapKNNGraph, v)
@@ -177,7 +186,7 @@ Return a list of the neighbors of `v` connected by outgoing edges.
 HeapKNNGraph stores each vertex's outgoing edges in a heap, so this has a time
 complexity of `𝒪(K)`.
 """
-@inline LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g._knn_heaps[v].valtree)
+@inline LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g.heaps[v].valtree)
 
 """
     add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
@@ -188,10 +197,10 @@ vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `false`) 
 """
 function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
-    if e < top(g._knn_heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+    if e < top(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
         # we know this edge is smaller than the top, so we can start by removing that
-        pop!(g._knn_heaps[src(e)])
-        push!(g._knn_heaps[src(e)], e)
+        pop!(g.heaps[src(e)])
+        push!(g.heaps[src(e)], e)
         return true
     end
     return false
@@ -204,7 +213,7 @@ end
 Return the diameter of the set of KNNs of vertex `v`.
 """
 function knn_diameter(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V) where V
-    return 2 * weight(top(g._knn_heaps[v]))
+    return 2 * weight(top(g.heaps[v]))
 end
 
 """
@@ -245,7 +254,7 @@ edges is guaranteed; in particular, node_edge(graph, v, 1) is not
 guaranteed to be the edge to v's nearest neighbor.
 """
 @inline function node_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V, i::V) where V
-    return g._knn_heaps[v].valtree[i]
+    return g.heaps[v].valtree[i]
 end
 
 """
@@ -267,6 +276,6 @@ invariant.
 function update_flag!(g::HeapKNNGraph{V}, v::V, i::V, new_flag::Bool) where V
     edge = node_edge(g, v, i)
     new_edge = edgetype(g)(src(edge), dst(edge), weight(edge), new_flag)
-    g._knn_heaps[v].valtree[i] = new_edge
+    g.heaps[v].valtree[i] = new_edge
     return new_edge
 end

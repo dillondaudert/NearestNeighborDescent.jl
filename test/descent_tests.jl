@@ -14,12 +14,14 @@
         @test true
 
     end
+    test_data = [rand(2) for _ in 1:5]
+    test_metric = Euclidean()
     test_inds = Int[2 4 2 1 1;
                     5 3 4 3 4]
     test_dsts = Float64[1. 2. 3. 4. 5.;
                         2. 3. 4. 5. 6.]
     @testset "get_neighbors! tests" begin
-        g = HeapKNNGraph(test_inds, test_dsts)
+        g = HeapKNNGraph(test_data, test_metric, test_inds, test_dsts)
         olds, news = NearestNeighborDescent.get_neighbors!(g)
         @test all(length.(olds) .== 0) # no old edges
         @test news[1] == [2, 4, 5]
@@ -59,11 +61,11 @@
         data = [rand(5) for _ in 1:8]
         g1 = HeapKNNGraph(data, 3, Euclidean())
         init_inds, init_dsts = knn_matrices(g1)
-        g2 = LockHeapKNNGraph(init_inds, init_dsts)
+        g2 = LockHeapKNNGraph(data, Euclidean(), init_inds, init_dsts)
         g1_diam = mean_knn_diameter(g1)
 
-        NearestNeighborDescent.local_join!(g1, data, Euclidean())
-        NearestNeighborDescent.local_join!(g2, data, Euclidean())
+        NearestNeighborDescent.local_join!(g1)
+        NearestNeighborDescent.local_join!(g2)
         @test mean_knn_diameter(g1) ≤ g1_diam # test the knn diameter is nonincreasing
         inds1, dsts1 = knn_matrices(g1)
         inds2, dsts2 = knn_matrices(g2)

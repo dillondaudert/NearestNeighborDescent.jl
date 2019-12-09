@@ -5,8 +5,8 @@
     small_data_f32 = [rand(Float32, 5) for _ in 1:50]
 
     function is_valid_knn_graph(g::HeapKNNGraph{V, K}) where {V, K}
-        for i in eachindex(g._knn_heaps)
-            heap = g._knn_heaps[i]
+        for i in eachindex(g.heaps)
+            heap = g.heaps[i]
             # check that all nodes have exactly K outgoing edges
             if length(heap) != K
                 return false
@@ -26,18 +26,20 @@
     end
 
     @testset "Constructor Tests" begin
+        test_data = [rand(2) for _ in 1:4]
+        test_metric = Euclidean()
         test_inds = Int[4 3 2 1; 2 1 4 3]
         test_dsts = Float64[1. 2. 3. 4.; 2. 3. 4. 5.]
-        g = HeapKNNGraph(test_inds, test_dsts)
-        @test g isa HeapKNNGraph{Int, 2, Float64}
+        g = HeapKNNGraph(test_data, test_metric, test_inds, test_dsts)
+        @test g isa HeapKNNGraph{Int, 2, Float64, Vector{Vector{Float64}}, Euclidean}
         @test is_valid_knn_graph(g)
 
-        @test_throws ErrorException HeapKNNGraph(test_inds, rand(3, 4))
+        @test_throws ErrorException HeapKNNGraph(test_data, test_metric, test_inds, rand(3, 4))
 
         k = 10
         n = length(small_data_f64)
         g = HeapKNNGraph(small_data_f64, k, Euclidean())
-        @test g isa HeapKNNGraph{Int, 10, Float64}
+        @test g isa HeapKNNGraph{Int, 10, Float64, Vector{Vector{Float64}}}
         @test is_valid_knn_graph(g)
     end
     @testset "LightGraphs interface tests" begin

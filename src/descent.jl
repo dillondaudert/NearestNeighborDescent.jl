@@ -28,7 +28,7 @@ function nndescent(data::AbstractVector,
 
     graph = HeapKNNGraph(data, n_neighbors, metric)
     for i in 1:max_iters
-        c = local_join!(graph, data, metric; sample_rate=sample_rate)
+        c = local_join!(graph; sample_rate=sample_rate)
         if c ≤ precision * n_neighbors * nv(graph)
             break
         end
@@ -48,19 +48,21 @@ function nndescent(data::AbstractMatrix,
 end
 
 """
-    local_join!(graph, data, metric; kwargs...)
+    local_join!(graph; kwargs...)
 
 Perform a local join on each vertex `v`'s neighborhood `N[v]` in `graph`. Given vertex `v`
-and its neighbors `N[v]`, compute the similar `metric(p, q)` for each pair `p, q ∈ N[v]` and
-update `N[q]` and `N[p]`.
+and its neighbors `N[v]`, compute the similarity `graph.metric(p, q)` for each pair `p, q ∈ N[v]`
+and update `N[q]` and `N[p]`.
 
 This mutates `graph` in-place and returns a nonnegative integer indicating how many neighbor
 updates took place during the local join.
 """
 function local_join! end
 
-function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
+function local_join!(graph::HeapKNNGraph; sample_rate = 1)
     # find in and out neighbors - old neighbors have already participated in a previous local join
+    data = graph.data
+    metric = graph.metric
     old_neighbors, new_neighbors = get_neighbors!(graph, sample_rate)
     c = 0
     # compute local join
@@ -92,7 +94,9 @@ function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate =
 end
 
 
-function local_join!(graph::LockHeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
+function local_join!(graph::LockHeapKNNGraph; sample_rate = 1)
+    data = graph.data
+    metric = graph.metric
     old_neighbors, new_neighbors = get_neighbors!(graph, sample_rate)
     count = Threads.Atomic{Int}(0)
     # compute local join

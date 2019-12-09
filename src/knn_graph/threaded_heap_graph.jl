@@ -4,14 +4,22 @@
 LockHeapKNNGraph - uses locks to synchronize the heaps that store the underlying
 graph edge data. The heaps themselves are *not* thread-safe.
 """
-struct LockHeapKNNGraph{V<:Integer, K, U<:Real} <: ApproximateKNNGraph{V, K, U}
-    _knn_heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
-    _heap_locks::Vector{ReentrantLock}
+struct LockHeapKNNGraph{V, K, U, D, M} <: ApproximateKNNGraph{V, K, U, D, M}
+    heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
+    locks::Vector{ReentrantLock}
+    data::D
+    metric::M
 end
-function LockHeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{U}) where {V <: Integer,
-                                                                                           U <: Real}
+function LockHeapKNNGraph(data::D,
+                          metric::M,
+                          indices::AbstractMatrix{V},
+                          distances::AbstractMatrix{U}) where {D <: AbstractVector,
+                                                               M <: PreMetric,
+                                                               V <: Integer,
+                                                               U <: Real}
     n_neighbors = size(indices, 1)
     n_points = size(indices, 2)
+    length(data) == size(indices, 2) || error("`indices` must have num columns equal to `length(data)`")
     size(indices) == size(distances) || error("`indices` and `distances` must have same shape")
     n_neighbors < n_points || error("`Must have more columns than rows`")
     # ...
@@ -21,9 +29,10 @@ function LockHeapKNNGraph(indices::AbstractMatrix{V}, distances::AbstractMatrix{
     for v in 1:n_points, i in 1:n_neighbors
         _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
     end
-    return LockHeapKNNGraph{V, n_neighbors, U}(knn_heaps, heap_locks)
+    return LockHeapKNNGraph{V, n_neighbors, U, D, M}(knn_heaps, heap_locks, data, metric)
 end
-function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {V, D <: AbstractVector{V}}
+function LockHeapKNNGraph(data::D, k::Integer, metric::M) where {D <: AbstractVector,
+                                                                 M <: PreMetric}
 
     # assert some invariants
     k > 0 || error("LockHeapKNNGraph needs positive `k`")
@@ -50,7 +59,7 @@ function LockHeapKNNGraph(data::D, k::Integer, metric::PreMetric) where {V, D <:
             end
         end
     end
-    return LockHeapKNNGraph{typeof(k), k, U}(knn_heaps, heap_locks)
+    return LockHeapKNNGraph{typeof(k), k, U, D, M}(knn_heaps, heap_locks, data, metric)
 end
 
 """
@@ -63,8 +72,8 @@ as it iterates in order for this to be thread-safe.
 @inline function LightGraphs.inneighbors(g::LockHeapKNNGraph{V}, v::V) where V
     neighbs = V[]
     for i in nv(g)
-        lock(g._heap_locks[i]) do
-            for e in g._knn_heaps[i].valtree
+        lock(g.locks[i]) do
+            for e in g.heaps[i].valtree
                 if dst(e) == v
                     push!(neighbs, src(e))
                 end
@@ -81,8 +90,8 @@ Similar to `outneighbors(g::HeapKNNGraph, v)`, except locks the neighbor heap be
 to make this thread-safe.
 """
 @inline function LightGraphs.outneighbors(g::LockHeapKNNGraph{V}, v::V) where V
-    neighbs = lock(g._heap_locks[v]) do
-        dst.(g._knn_heaps[v].valtree)
+    neighbs = lock(g.locks[v]) do
+        dst.(g.heaps[v].valtree)
     end
     return neighbs
 end
@@ -94,11 +103,11 @@ Similar to `add_edge!(g::HeapKNNGraph, e)`, but made thread-safe using locks.
 """
 function LightGraphs.add_edge!(g::LockHeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
-    lock(g._heap_locks[src(e)]) do
-        if e < top(g._knn_heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+    lock(g.locks[src(e)]) do
+        if e < top(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
             # we know this edge is smaller than the top, so we can start by removing that
-            pop!(g._knn_heaps[src(e)])
-            push!(g._knn_heaps[src(e)], e)
+            pop!(g.heaps[src(e)])
+            push!(g.heaps[src(e)], e)
             return true
         end
         return false
@@ -111,7 +120,7 @@ end
 Return all the outgoing edges from node i in an arbitrary order. Thread-safe.
 """
 @inline function node_edges(g::LockHeapKNNGraph{V, K}, i::V) where {V, K}
-    lock(g._heap_locks[i]) do
+    lock(g.locks[i]) do
         return edgetype(g)[node_edge(g, i, j) for j in one(V):K]
     end
 end
@@ -124,10 +133,10 @@ the edge ordering, this can't invalidate the heap invariant. Uses locks to ensur
 thread safety.
 """
 function update_flag!(g::LockHeapKNNGraph{V}, i::V, j::V, flag::Bool) where V
-    lock(g._heap_locks[i]) do
+    lock(g.locks[i]) do
         edge = node_edge(g, i, j)
         newedge = edgetype(g)(src(edge), dst(edge), weight(edge), flag)
-        g._knn_heaps[i].valtree[j] = newedge
+        g.heaps[i].valtree[j] = newedge
         return newedge
     end
 end
