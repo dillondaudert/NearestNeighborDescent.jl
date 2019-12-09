@@ -17,13 +17,11 @@ Pages = ["public.md"]
 nndescent
 search
 local_join!
-get_neighbors!
 ```
 
 ### KNN Graphs Public Interface
 
 ```@docs
-KNNGraphs
 ApproximateKNNGraph
 HeapKNNGraph
 LockHeapKNNGraph

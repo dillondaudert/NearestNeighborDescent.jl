@@ -48,15 +48,17 @@ function nndescent(data::AbstractMatrix,
 end
 
 """
-    local_join!(g::HeapKNNGraph, data, metric::PreMetric; kwargs...)
+    local_join!(graph, data, metric; kwargs...)
 
-Perform a local join on each vertex `v`'s neighborhood `N[v]` in `g`. Given vertex `v`
+Perform a local join on each vertex `v`'s neighborhood `N[v]` in `graph`. Given vertex `v`
 and its neighbors `N[v]`, compute the similar `metric(p, q)` for each pair `p, q ∈ N[v]` and
 update `N[q]` and `N[p]`.
 
-This mutates `g` in-place and returns a nonnegative integer indicating how many neighbor
+This mutates `graph` in-place and returns a nonnegative integer indicating how many neighbor
 updates took place during the local join.
 """
+function local_join! end
+
 function local_join!(graph::HeapKNNGraph, data, metric::PreMetric; sample_rate = 1)
     # find in and out neighbors - old neighbors have already participated in a previous local join
     old_neighbors, new_neighbors = get_neighbors!(graph, sample_rate)

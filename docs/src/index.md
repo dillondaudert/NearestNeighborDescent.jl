@@ -2,8 +2,3 @@
 
 ```@contents
 ```
-
-## Index
-
-```@index
-```

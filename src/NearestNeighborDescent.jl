@@ -11,6 +11,6 @@ include("knn_graph/KNNGraphs.jl")
 include("utils.jl")
 include("descent.jl")
 include("search.jl")
-export nndescent, search
+export nndescent, search, local_join!
 
 end # module
