@@ -1,17 +1,15 @@
 
 
 """
-    search(graph, queries, n_neighbors, metric; max_candidates) -> indices, distances
+    search(graph, queries, n_neighbors; max_candidates) -> indices, distances
 
 Search the kNN `graph` for the nearest neighbors of the points in `queries`.
 `max_candidates` controls how large the candidate queue should be (min `n_neighbors`);
 larger values increase accuracy at the cost of speed.
 """
 function search(graph::G,
-                data::D,
                 queries::D,
-                n_neighbors::Integer,
-                metric::PreMetric;
+                n_neighbors::Integer;
                 max_candidates=max(n_neighbors, 20),
                 ) where {V, K, U, G <: ApproximateKNNGraph{V, K, U}, D <: AbstractVector}
 
@@ -19,6 +17,8 @@ function search(graph::G,
     n_neighbors ≥ 1 || error("n_neighbors must be at least 1")
     max_candidates ≥ 5 || error("max_candidates must be at least 5")
 
+    data = graph.data
+    metric = graph.metric
     # lists of candidates, sorted by distance
     candidates = [BinaryMaxHeap{Tuple{U, V, Bool}}() for _ in 1:length(queries)]
     # a set of seen candidates per thread
@@ -28,7 +28,7 @@ function search(graph::G,
         seen = seen_sets[Threads.threadid()]
         seen .= false
         # initialize with random
-        init_candidates!(candidates[i], seen, graph, data, queries[i], metric, max_candidates)
+        init_candidates!(candidates[i], seen, graph, queries[i], max_candidates)
         while true
             next_candidate = get_next_candidate!(candidates[i])
             if isnothing(next_candidate)
@@ -52,15 +52,12 @@ function search(graph::G,
 end
 
 function search(graph::G,
-                data::D,
                 queries::D,
-                n_neighbors::Integer,
-                metric::PreMetric;
+                n_neighbors::Integer;
                 max_candidates=max(n_neighbors, 20),
                 ) where {V, K, U, G <: ApproximateKNNGraph{V, K, U}, D <: AbstractMatrix}
-    data_cols = [col for col in eachcol(data)]
-    query_cols = [col for col in eachcol(queries)]
-    return search(graph, data_cols, query_cols, n_neighbors, metric; max_candidates=max_candidates)
+    query_cols = collect(eachcol(queries))
+    return search(graph, query_cols, n_neighbors; max_candidates=max_candidates)
 end
 
 
@@ -83,9 +80,9 @@ function get_next_candidate!(candidates::BinaryMaxHeap{Tuple{U, V, Bool}}) where
 end
 
 
-function init_candidates!(candidates, seen, graph, data, query, metric, max_candidates)
+function init_candidates!(candidates, seen, graph, query, max_candidates)
     for v in KNNGraphs.sample_neighbors(nv(graph), max_candidates)
-        dist = evaluate(metric, query, data[v])
+        dist = evaluate(graph.metric, query, graph.data[v])
         push!(candidates, (dist, v, false))
         seen[v] = true
     end

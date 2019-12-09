@@ -6,12 +6,12 @@
         queries = [rand(5) for _ in 1:5]
         graph = nndescent(data, 4, Euclidean())
         # vector of vector usage
-        search(graph, data, queries, 3, Euclidean())
+        search(graph, queries, 3)
 
         data = rand(5, 20)
         queries = rand(5, 5)
         # matrix usage
-        search(graph, data, queries, 3, Euclidean())
+        search(graph, queries, 3)
         @test true
     end
 
@@ -32,7 +32,7 @@
                   .6 .6]
 
     graph = nndescent(data, 3, Euclidean())
-    inds, dists = search(graph, data, queries, 2, Euclidean())
+    inds, dists = search(graph, queries, 2)
 
     @test all(inds .== true_inds)
     @test all(dists .== true_dists)
