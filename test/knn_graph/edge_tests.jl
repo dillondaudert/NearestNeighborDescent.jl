@@ -33,7 +33,7 @@
             @test e1 < e3
         end
         e1 = HeapKNNGraphEdge(1, 2, .5, true)
-        @test eltype(e1) == Int64
+        @test eltype(e1) == Int
 
         @testset "property methods" begin
             e1 = HeapKNNGraphEdge(3, 4, 0., true)
