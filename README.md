@@ -1,7 +1,8 @@
 # NearestNeighborDescent.jl
 
-[![Build Status](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl) [![Build status](https://ci.appveyor.com/api/projects/status/lr49p9vxkr8a3uv0?svg=true)](https://ci.appveyor.com/project/dillondaudert/nearestneighbordescent-jl)
- [![codecov](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master)
+| **Documentation** | **Build Status** |
+|:-----------------:|:----------------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 A Julia implementation of Nearest Neighbor Descent.
 
@@ -20,67 +21,54 @@ NNDescent is based on the heuristic argument that *a neighbor of a neighbor is a
 given a list of approximate nearest neighbors to a point, we can improve that list by exploring the neighbors of each
 point in the list. The algorithm is in essence the repeated application of this principle.
 
-
-## Usage
-The `DescentGraph` constructor builds the approximate kNN graph:
-```jl
-DescentGraph(data, n_neighbors, metric; max_iters, sample_rate, precision)
+## Installation
+```julia
+]add NearestNeighborDescent
 ```
-- `data`: The set of points to build the tree from. This must be of type
-`Vector{V}`, where `V <: AbstractVector` **or** `AbstractMatrix`.
-- `n_neighbors`: An integer specifies the number of neighbors to find
-- `metric`: Any metric `M` where `M <: SemiMetric` from the Distances.jl package. Default is `Euclidean()`.
 
-The performance of NN Descent can be tuned with several keyword arguments.
-- `max_iters`: This controls the maximum number of iterations to search for
-neighbors. Default is `10`.
-- `sample_rate`: The algorithm performs a local join around the candidate
-neighbors of each point during execution. The sample rate is the likelihood
-that each candidate be included in the local join for an iteration. Default is
-`1.`.
-- `precision`: This argument roughly corresponds to the fraction of true
-nearest neighbors that will be missed by the algorithm. Default `.001`.
+## Basic Usage
 
-The k-nearest neighbors can be accessed through the `indices` and `distances`
-attributes. These are both `KxN` matrices containing ids and distances to each
-point's neighbors, respectively, where `K = n_neighbors` and `N = length(data)`.
+Approximate kNN graph construction on a dataset:
 
-Example:
-```jl
+```julia
 using NearestNeighborDescent
-data = [rand(10) for _ in 1:1000]
-# OR data = rand(10, 1000)
+using Distances
+data = [rand(20) for _ in 1:1000]
+n_neighbors = 10
+metric = Euclidean()
+graph = nndescent(data, n_neighbors, metric)
+```
+
+The approximate KNNs of the original dataset can be retrieved from the resulting graph with
+```julia
+# return the approximate knns as KxN matrices of indexes and distances, where
+# indices[j, i] and distances[j, i] are the index of and distance to node i's jth
+# nearest neighbor, respectively.
+indices, distances = knn_matrices(graph)
+```
+
+To find the approximate neighbors for new points with respect to an already constructed graph:
+
+```julia
+queries = [rand(20) for _ in 1:20]
 n_neighbors = 5
-
-# nn descent search
-graph = DescentGraph(data, n_neighbors)
-
-# access point i's jth nearest neighbor:
-graph.indices[j, i]
-graph.distances[j, i]
+indices, distances = search(graph, queries, n_neighbors)
 ```
 
-Once constructed, the `DescentGraph` can be used to find the nearest
-neighbors to new points. This is done via the `search` method:
-```jl
-search(graph, queries, n_neighbors, queue_size) -> indices, distances
-```
-- `graph`: An instance of `DescentGraph`
-- `queries`: A vector of new data points of type `Vector{V}` or `AbstractMatrix`. 
-Note that the dimensionality of the queries should match that of the data used to 
-originally construct the graph.
-- `n_neighbors`: The number of neighbors to find for each query. This does
-*not* have to be the same as the number used to construct `graph`.
-- `queue_size`: Each query maintains a heap of candidate neighbors.
-`queue_size` controls the maximum number of candidates as a multiple of
-`n_neighbors`. Default is `1.`.
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://dillondaudert.github.io/NearestNeighborDescent.jl/stable
 
-Similar to `DescentGraph`, this returns two matrices for the indices and
-distances to the nearest neighbors of each query.
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://dillondaudert.github.io/NearestNeighborDescent.jl/dev
 
-Example:
-```jl
-queries = [rand(10) for _ in 1:100]
-# OR queries = rand(10, 100)
-idxs, dists = search(knngraph, queries, 4)
-```
+[travis-img]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl
+
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/lr49p9vxkr8a3uv0?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/dillondaudert/nearestneighbordescent-jl
+
+[codecov-img]: https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl
+
+[coveralls-img]: https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master

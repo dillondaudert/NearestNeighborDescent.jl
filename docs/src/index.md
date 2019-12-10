@@ -1,0 +1,4 @@
+# NearestNeighborDescent.jl Documentation
+
+```@contents
+```

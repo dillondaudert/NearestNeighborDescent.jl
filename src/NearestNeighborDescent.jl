@@ -1,12 +1,16 @@
 module NearestNeighborDescent
 
-using Distances: SemiMetric, Euclidean, evaluate, result_type
-using DataStructures: AbstractHeap, BinaryMaxHeap, BinaryHeap, top, pop! 
+using DataStructures
+using Distances
+using LightGraphs
+using Reexport
+
+include("knn_graph/KNNGraphs.jl")
+@reexport using .KNNGraphs
 
 include("utils.jl")
-include("nn_descent.jl")
-include("brute_knn.jl")
-
-export DescentGraph, search
+include("descent.jl")
+include("search.jl")
+export nndescent, search, local_join!
 
 end # module

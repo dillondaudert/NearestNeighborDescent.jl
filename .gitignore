@@ -5,3 +5,5 @@ deps/deps.jl
 Manifest.toml
 
 .ipynb_checkpoints
+*.swp
+docs/build/
