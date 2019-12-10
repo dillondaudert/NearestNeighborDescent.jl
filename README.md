@@ -1,7 +1,8 @@
 # NearestNeighborDescent.jl
 
-[![Build Status](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master)](https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl) [![Build status](https://ci.appveyor.com/api/projects/status/lr49p9vxkr8a3uv0?svg=true)](https://ci.appveyor.com/project/dillondaudert/nearestneighbordescent-jl)
- [![codecov](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl) [![Coverage Status](https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master)](https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master)[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://dillondaudert.github.io/NearestNeighborDescent.jl/dev)
+| **Documentation** | **Build Status** |
+|:-----------------:|:----------------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 A Julia implementation of Nearest Neighbor Descent.
 
@@ -20,27 +21,51 @@ NNDescent is based on the heuristic argument that *a neighbor of a neighbor is a
 given a list of approximate nearest neighbors to a point, we can improve that list by exploring the neighbors of each
 point in the list. The algorithm is in essence the repeated application of this principle.
 
+## Installation
+```julia
+]add NearestNeighborDescent
+```
+
 ## Basic Usage
 
-One-shot approximate kNN graph construction on a dataset:
+Approximate kNN graph construction on a dataset:
 
 ```julia
-nndescent(data, n_neighbors, metric; max_iters, sample_rate, precision) -> graph
+using NearestNeighborDescent
+using Distances
+data = [rand(20) for _ in 1:1000]
+n_neighbors = 10
+metric = Euclidean()
+graph = nndescent(data, n_neighbors, metric)
 ```
 
 The approximate KNNs of the original dataset can be retrieved from the resulting graph with
 ```julia
-# return the approximate knns as matrices of indexes and distances, where
+# return the approximate knns as KxN matrices of indexes and distances, where
 # indices[j, i] and distances[j, i] are the index of and distance to node i's jth
 # nearest neighbor, respectively.
-knn_matrices(graph) -> indices, distances
+indices, distances = knn_matrices(graph)
 ```
 
 To find the approximate neighbors for new points with respect to an already constructed graph:
 
 ```julia
-search(graph, queries, n_neighbors) -> indices, distances
+queries = [rand(20) for _ in 1:20]
+n_neighbors = 5
+indices, distances = search(graph, queries, n_neighbors)
 ```
 
-`graph` is a `ApproximateKNNGraph <: AbstractGraph`, and all the usual `LightGraphs` utilities
-will work on it. 
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://dillondaudert.github.io/NearestNeighborDescent.jl/stable
+
+[travis-img]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl
+
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/lr49p9vxkr8a3uv0?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/dillondaudert/nearestneighbordescent-jl
+
+[codecov-img]: https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/dillondaudert/NearestNeighborDescent.jl
+
+[coveralls-img]: https://coveralls.io/repos/github/dillondaudert/NearestNeighborDescent.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/dillondaudert/NearestNeighborDescent.jl?branch=master
