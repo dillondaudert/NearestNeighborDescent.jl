@@ -1,12 +1,12 @@
 # temporary draft implementation to eventually replace nn_descent.jl
 
 """
-    nndescent(data, n_neighbors, metric)
+    nndescent(GraphT::Type{ApproximateKNNGraph}, data, n_neighbors, metric; kwargs...)
 
 Find the approximate neighbors of each point in `data` by  iteratively
-refining a KNN graph of type `graph_type`. Returns the final KNN graph.
+refining a KNN graph of type `GraphT`. Returns the final KNN graph.
 
-# Arguments
+# Keyword Arguments
 - `max_iters = 10`: Limits the number of iterations to refine candidate
 nearest neighbors. Higher values trade off speed for accuracy. Note that graph
 construction may terminate early if little progress is being made.
@@ -16,7 +16,8 @@ around each point. Lower values trade off accuracy for speed.
 where precision is "roughly the fraction of true kNN allowed to be missed due to
 early termination". Lower values take longer but return more accurate results.
 """
-function nndescent(data::AbstractVector,
+function nndescent(GraphT::Type{<:ApproximateKNNGraph},
+                   data::AbstractVector,
                    n_neighbors::Integer,
                    metric::PreMetric;
                    max_iters = 10,
@@ -26,7 +27,7 @@ function nndescent(data::AbstractVector,
 
     validate_args(data, n_neighbors, metric, max_iters, sample_rate, precision)
 
-    graph = HeapKNNGraph(data, n_neighbors, metric)
+    graph = GraphT(data, n_neighbors, metric)
     for i in 1:max_iters
         c = local_join!(graph; sample_rate=sample_rate)
         if c ≤ precision * n_neighbors * nv(graph)
@@ -36,16 +37,24 @@ function nndescent(data::AbstractVector,
     return graph
 end
 
-function nndescent(data::AbstractMatrix,
-                   n_neighbors::Integer,
-                   metric::PreMetric;
-                   max_iters = 10,
-                   sample_rate = 1,
-                   precision = 1e-3,
+"""
+    nndescent(::Type{<:ApproximateKNNGraph}, data::AbstractMatrix, n_neighbors::Integer, metric::PreMetric; kwargs...)
+"""
+function nndescent(GraphT,
+                   data::AbstractMatrix,
+                   n_neighbors,
+                   metric;
+                   kwargs...
                   )
-    return nndescent([col for col in eachcol(data)], n_neighbors, metric;
-                     max_iters=max_iters, sample_rate=sample_rate, precision=precision)
+    return nndescent(GraphT, [col for col in eachcol(data)], n_neighbors, metric; kwargs...)
 end
+
+"""
+    nndescent(data, n_neighbors, metric; kwargs...)
+
+Do nndescent using `HeapKNNGraph` as the KNN Graph type.
+"""
+nndescent(data, n_neighbors, metric; kwargs...) = nndescent(HeapKNNGraph, data, n_neighbors, metric; kwargs...)
 
 """
     local_join!(graph; kwargs...)

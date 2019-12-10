@@ -2,16 +2,18 @@
 @testset "search tests" begin
 
     @testset "basic usage tests" begin
-        data = [rand(5) for _ in 1:20]
-        queries = [rand(5) for _ in 1:5]
-        graph = nndescent(data, 4, Euclidean())
-        # vector of vector usage
-        search(graph, queries, 3)
+        for GraphT in [HeapKNNGraph, LockHeapKNNGraph]
+            data = [rand(5) for _ in 1:20]
+            queries = [rand(5) for _ in 1:5]
+            graph = nndescent(GraphT, data, 4, Euclidean(); max_iters=1)
+            # vector of vector usage
+            @inferred search(graph, queries, 3)
 
-        data = rand(5, 20)
-        queries = rand(5, 5)
-        # matrix usage
-        search(graph, queries, 3)
+            data = rand(5, 20)
+            queries = rand(5, 5)
+            # matrix usage
+            @inferred search(graph, queries, 3)
+        end
         @test true
     end
 

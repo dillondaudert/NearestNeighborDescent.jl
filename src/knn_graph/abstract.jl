@@ -11,13 +11,11 @@ has exactly `K` forward edges with weights of type `U`.
 `D` is the type of the dataset corresponding to this graph, and `M` is a `Distances.PreMetric`
 with result type matching `U`.
 """
-abstract type ApproximateKNNGraph{
-    V <: Integer,
-    K,
-    U <: Real,
-    D <: AbstractVector,
-    M <: PreMetric
-} <: AbstractGraph{V} end
+abstract type ApproximateKNNGraph{V<:Integer,
+                                  K,
+                                  U<:Real,
+                                  D<:AbstractVector,
+                                  M<:PreMetric} <: AbstractGraph{V} end
 
 # interface
 Base.eltype(::ApproximateKNNGraph{V}) where V = V

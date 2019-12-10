@@ -5,14 +5,24 @@
         k = 4
         metric = SqEuclidean()
         # vector of vectors
-        nndescent(data, k, metric; max_iters=1)
+        @test nndescent(data, k, metric; max_iters=1) isa HeapKNNGraph{Int, k, Float64}
 
         # matrix
         data = rand(5, 20)
-        nndescent(data, k, metric; max_iters=1)
-
+        @test nndescent(data, k, metric; max_iters=1) isa HeapKNNGraph{Int, k, Float64}
+    end
+    @testset "GraphT method tests" begin
+        # test passing graph types to nndescent
+        for GraphT in [HeapKNNGraph, LockHeapKNNGraph]
+            data = [rand(5) for _ in 1:20]
+            k = 4
+            metric = Euclidean()
+            @test nndescent(GraphT, data, k, metric; max_iters=1) isa GraphT
+            # matrix
+            data = rand(5, 20)
+            @test nndescent(GraphT, data, k, metric; max_iters=1) isa GraphT
+        end
         @test true
-
     end
     test_data = [rand(2) for _ in 1:5]
     test_metric = Euclidean()

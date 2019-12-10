@@ -6,7 +6,11 @@ A weighted, directed graph representing an approximate k-nearest neighbors graph
 using binary max heaps to store each vertex's forward edges, allowing for
 efficient updates of the candidate neighbors.
 """
-struct HeapKNNGraph{V, K, U, D, M} <: ApproximateKNNGraph{V, K, U, D, M}
+struct HeapKNNGraph{V<:Integer,
+                    K,
+                    U<:Real,
+                    D<:AbstractVector,
+                    M<:PreMetric} <: ApproximateKNNGraph{V, K, U, D, M}
     heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     data::D
     metric::M

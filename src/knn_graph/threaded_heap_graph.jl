@@ -4,7 +4,11 @@
 LockHeapKNNGraph - uses locks to synchronize the heaps that store the underlying
 graph edge data. The heaps themselves are *not* thread-safe.
 """
-struct LockHeapKNNGraph{V, K, U, D, M} <: ApproximateKNNGraph{V, K, U, D, M}
+struct LockHeapKNNGraph{V<:Integer,
+                        K,
+                        U<:Real,
+                        D<:AbstractVector,
+                        M<:PreMetric} <: ApproximateKNNGraph{V, K, U, D, M}
     heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     locks::Vector{ReentrantLock}
     data::D
