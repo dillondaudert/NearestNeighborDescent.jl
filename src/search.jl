@@ -8,10 +8,10 @@ Search the kNN `graph` for the nearest neighbors of the points in `queries`.
 larger values increase accuracy at the cost of speed.
 """
 function search(graph::G,
-                queries::D,
+                queries::AbstractVector,
                 n_neighbors::Integer;
                 max_candidates=max(n_neighbors, 20),
-                ) where {V, K, U, G <: ApproximateKNNGraph{V, K, U}, D <: AbstractVector}
+                ) where {V, U, G <: ApproximateKNNGraph{V, U}}
 
     length(queries) ≥ 1 || error("queries must have at least 1 element")
     n_neighbors ≥ 1 || error("n_neighbors must be at least 1")
@@ -51,11 +51,11 @@ function search(graph::G,
     return deheap_knns(candidates, n_neighbors)
 end
 
-function search(graph::G,
-                queries::D,
+function search(graph::ApproximateKNNGraph,
+                queries::AbstractMatrix,
                 n_neighbors::Integer;
                 max_candidates=max(n_neighbors, 20),
-                ) where {V, K, U, G <: ApproximateKNNGraph{V, K, U}, D <: AbstractMatrix}
+                )
     query_cols = collect(eachcol(queries))
     return search(graph, query_cols, n_neighbors; max_candidates=max_candidates)
 end

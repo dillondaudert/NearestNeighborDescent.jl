@@ -5,14 +5,13 @@
 
 # Abstract KNN Graph definitions
 """
-ApproximateKNNGraph{V, K, U, D, M} subtypes are weighted, directed graphs where each vertex
-has exactly `K` forward edges with weights of type `U`.
+ApproximateKNNGraph{V, U, D, M} subtypes are weighted, directed graphs where each vertex
+has exactly `k` forward edges with weights of type `U`.
 
 `D` is the type of the dataset corresponding to this graph, and `M` is a `Distances.PreMetric`
 with result type matching `U`.
 """
 abstract type ApproximateKNNGraph{V<:Integer,
-                                  K,
                                   U<:Real,
                                   D<:AbstractVector,
                                   M<:PreMetric} <: AbstractGraph{V} end

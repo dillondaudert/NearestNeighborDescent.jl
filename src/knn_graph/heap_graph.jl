@@ -1,18 +1,18 @@
 # Concrete definition
 """
-    HeapKNNGraph{V, K, U, D, M}
+    HeapKNNGraph{V, U, D, M}
 
 A weighted, directed graph representing an approximate k-nearest neighbors graph
 using binary max heaps to store each vertex's forward edges, allowing for
 efficient updates of the candidate neighbors.
 """
 struct HeapKNNGraph{V<:Integer,
-                    K,
                     U<:Real,
                     D<:AbstractVector,
-                    M<:PreMetric} <: ApproximateKNNGraph{V, K, U, D, M}
+                    M<:PreMetric} <: ApproximateKNNGraph{V, U, D, M}
     heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     data::D
+    n_neighbors::V
     metric::M
 end
 
@@ -41,7 +41,7 @@ function HeapKNNGraph(data::D,
     for v in 1:n_points, i in 1:n_neighbors
         _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
     end
-    return HeapKNNGraph{V, n_neighbors, U, D, M}(knn_heaps, data, metric)
+    return HeapKNNGraph{V, U, D, M}(knn_heaps, data, n_neighbors, metric)
 end
 
 """
@@ -71,7 +71,7 @@ function HeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: Abst
             _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, rev_dist), n_neighbors)
         end
     end
-    return HeapKNNGraph{typeof(n_neighbors), n_neighbors, U, D, M}(knn_heaps, data, metric)
+    return HeapKNNGraph{typeof(n_neighbors), U, D, M}(knn_heaps, data, n_neighbors, metric)
 end
 
 # lightgraphs interface
@@ -95,12 +95,12 @@ Return an iterator of the vertices in the KNN graph.
 end
 
 """
-    weights(g::HeapKNNGraph{V, K, U})
+    weights(g::HeapKNNGraph{V, U})
 
 Returns a SparseMatrixCSC{U, V} `w` where `w[j, i]` returns the weight of the
 directed edge from vertex `i` to `j`.
 """
-function LightGraphs.weights(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}}) where {V, K, U}
+function LightGraphs.weights(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
     # dests, srcs, ws where weights[dests[k], srcs[k]] = ws[k]
     srcs, dsts = V[], V[]
     vals = U[]
@@ -117,7 +117,7 @@ end
 
 Return the type of the edges in `g`.
 """
-function LightGraphs.edgetype(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}}) where {V, K, U}
+function LightGraphs.edgetype(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
     return HeapKNNGraphEdge{V, U}
 end
 
@@ -139,8 +139,8 @@ end
 
 Return true if `g` contains the edge `e`.
 """
-@inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}},
-                                      e::HeapKNNGraphEdge{V, U}) where {V, K, U}
+@inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}},
+                                      e::HeapKNNGraphEdge{V, U}) where {V, U}
     return e in g.heaps[src(e)].valtree
 end
 
@@ -156,7 +156,7 @@ Return true if vertex `v` is in `g`.
 
 Return the number of edges in `g`.
 """
-@inline LightGraphs.ne(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}}) where {V, K, U} = K*nv(g)
+@inline LightGraphs.ne(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U} = g.n_neighbors*nv(g)
 
 """
     nv(g::HeapKNNGraph)
@@ -227,9 +227,9 @@ Return the indices and distances of the approximate KNNs as dense
 matrices where indices[j, i] and distances[j, i] are the index of
 and distance to node i's jth nearest neighbor, respectively.
 """
-function knn_matrices(g::Union{HeapKNNGraph{V, K, U}, LockHeapKNNGraph{V, K, U}}) where {V, K, U}
-    indices = Matrix{V}(undef, K, nv(g))
-    distances = Matrix{U}(undef, K, nv(g))
+function knn_matrices(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
+    indices = Matrix{V}(undef, g.n_neighbors, nv(g))
+    distances = Matrix{U}(undef, g.n_neighbors, nv(g))
     for i in vertices(g)
         i_edges = sort!(node_edges(g, i))
         for (j, e) in enumerate(i_edges)
@@ -246,8 +246,8 @@ end
 Return the indices of the KNNs for each node `v` as tuples (v, i). To be used with
 `node_edge(graph, v, i)`.
 """
-function edge_indices(g::ApproximateKNNGraph{V, K}) where {V, K}
-    return CartesianIndices((nv(g), K))
+function edge_indices(g::ApproximateKNNGraph)
+    return CartesianIndices((nv(g), g.n_neighbors))
 end
 
 """
@@ -266,8 +266,8 @@ end
 
 Return all the outgoing edges from node v in an arbitrary order.
 """
-@inline function node_edges(g::HeapKNNGraph{V, K}, v::V) where {V, K}
-    return edgetype(g)[node_edge(g, v, i) for i in one(V):K]
+@inline function node_edges(g::HeapKNNGraph{V}, v::V) where V
+    return edgetype(g)[node_edge(g, v, i) for i in one(V):g.n_neighbors]
 end
 
 """

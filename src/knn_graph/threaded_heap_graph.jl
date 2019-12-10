@@ -5,13 +5,13 @@ LockHeapKNNGraph - uses locks to synchronize the heaps that store the underlying
 graph edge data. The heaps themselves are *not* thread-safe.
 """
 struct LockHeapKNNGraph{V<:Integer,
-                        K,
                         U<:Real,
                         D<:AbstractVector,
-                        M<:PreMetric} <: ApproximateKNNGraph{V, K, U, D, M}
+                        M<:PreMetric} <: ApproximateKNNGraph{V, U, D, M}
     heaps::Vector{BinaryMaxHeap{HeapKNNGraphEdge{V, U}}}
     locks::Vector{ReentrantLock}
     data::D
+    n_neighbors::V
     metric::M
 end
 function LockHeapKNNGraph(data::D,
@@ -33,37 +33,37 @@ function LockHeapKNNGraph(data::D,
     for v in 1:n_points, i in 1:n_neighbors
         _heappush!(knn_heaps[v], HeapKNNGraphEdge(v, indices[i, v], distances[i, v]), n_neighbors)
     end
-    return LockHeapKNNGraph{V, n_neighbors, U, D, M}(knn_heaps, heap_locks, data, metric)
+    return LockHeapKNNGraph{V, U, D, M}(knn_heaps, heap_locks, data, n_neighbors, metric)
 end
-function LockHeapKNNGraph(data::D, k::Integer, metric::M) where {D <: AbstractVector,
-                                                                 M <: PreMetric}
+function LockHeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: AbstractVector,
+                                                                           M <: PreMetric}
 
     # assert some invariants
-    k > 0 || error("LockHeapKNNGraph needs positive `k`")
-    length(data) > k || error("LockHeapKNNGraph needs `length(data) > k`")
+    n_neighbors > 0 || error("LockHeapKNNGraph needs positive `n_neighbors`")
+    length(data) > n_neighbors || error("LockHeapKNNGraph needs `length(data) > n_neighbors`")
 
-    np = length(data)
+    n_points = length(data)
     U = result_type(metric, first(data), first(data))
-    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{typeof(k), U}}
-    knn_heaps = HeapType[HeapType() for _ in 1:np]
-    heap_locks = ReentrantLock[ReentrantLock() for _ in 1:np]
+    HeapType = BinaryMaxHeap{HeapKNNGraphEdge{typeof(n_neighbors), U}}
+    knn_heaps = HeapType[HeapType() for _ in 1:n_points]
+    heap_locks = ReentrantLock[ReentrantLock() for _ in 1:n_points]
     # initialize approx knn heaps randomly
     Threads.@threads for i in eachindex(data)
-        k_idxs = sample_neighbors(np, k, exclude=[i])
+        k_idxs = sample_neighbors(n_points, n_neighbors, exclude=[i])
         for j in k_idxs
             weight = evaluate(metric, data[i], data[j])
             lock(heap_locks[i]) do
-                _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, weight), k)
+                _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, weight), n_neighbors)
             end
             if !(metric isa SemiMetric)
                 weight = evaluate(metric, data[j], data[i])
             end
             lock(heap_locks[j]) do
-                _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, weight), k)
+                _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, weight), n_neighbors)
             end
         end
     end
-    return LockHeapKNNGraph{typeof(k), k, U, D, M}(knn_heaps, heap_locks, data, metric)
+    return LockHeapKNNGraph{typeof(n_neighbors), U, D, M}(knn_heaps, heap_locks, data, n_neighbors, metric)
 end
 
 """
@@ -123,9 +123,9 @@ end
 
 Return all the outgoing edges from node i in an arbitrary order. Thread-safe.
 """
-@inline function node_edges(g::LockHeapKNNGraph{V, K}, i::V) where {V, K}
+@inline function node_edges(g::LockHeapKNNGraph{V}, i::V) where V
     lock(g.locks[i]) do
-        return edgetype(g)[node_edge(g, i, j) for j in one(V):K]
+        return edgetype(g)[node_edge(g, i, j) for j in one(V):g.n_neighbors]
     end
 end
 
