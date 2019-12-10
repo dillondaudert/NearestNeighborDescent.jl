@@ -79,22 +79,22 @@ function local_join!(graph::HeapKNNGraph; sample_rate = 1)
         for p in new_neighbors[v]
             for q in (q_ for q_ in new_neighbors[v] if p < q_)
                 # both new
-                weight = evaluate(metric, data[p], data[q])
-                c += add_edge!(graph, edgetype(graph)(p, q, weight))
+                dist = evaluate(metric, data[p], data[q])
+                c += add_edge!(graph, edgetype(graph)(p, q, dist))
                 if !(metric isa SemiMetric) # not symmetric
-                    weight = evaluate(metric, data[q], data[p])
+                    dist = evaluate(metric, data[q], data[p])
                 end
-                c += add_edge!(graph, edgetype(graph)(q, p, weight))
+                c += add_edge!(graph, edgetype(graph)(q, p, dist))
 
             end
             for q in (q_ for q_ in old_neighbors[v] if p != q_)
                 # one new, one old
-                weight = evaluate(metric, data[p], data[q])
-                c += add_edge!(graph, edgetype(graph)(p, q, weight))
+                dist = evaluate(metric, data[p], data[q])
+                c += add_edge!(graph, edgetype(graph)(p, q, dist))
                 if !(metric isa SemiMetric) # not symmetric
-                    weight = evaluate(metric, data[q], data[p])
+                    dist = evaluate(metric, data[q], data[p])
                 end
-                c += add_edge!(graph, edgetype(graph)(q, p, weight))
+                c += add_edge!(graph, edgetype(graph)(q, p, dist))
             end
         end
     end
@@ -113,24 +113,24 @@ function local_join!(graph::LockHeapKNNGraph; sample_rate = 1)
         for p in new_neighbors[v]
             for q in (q_ for q_ in new_neighbors[v] if p < q_)
                 # both new
-                weight = evaluate(metric, data[p], data[q])
-                res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                dist = evaluate(metric, data[p], data[q])
+                res = add_edge!(graph, edgetype(graph)(p, q, dist))
                 Threads.atomic_add!(count, Int(res))
                 if !(metric isa SemiMetric) # not symmetric
-                    weight = evaluate(metric, data[q], data[p])
+                    dist = evaluate(metric, data[q], data[p])
                 end
-                res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                res = add_edge!(graph, edgetype(graph)(q, p, dist))
                 Threads.atomic_add!(count, Int(res))
             end
             for q in (q_ for q_ in old_neighbors[v] if p != q_)
                 # one new, one old
-                weight = evaluate(metric, data[p], data[q])
-                res = add_edge!(graph, edgetype(graph)(p, q, weight))
+                dist = evaluate(metric, data[p], data[q])
+                res = add_edge!(graph, edgetype(graph)(p, q, dist))
                 Threads.atomic_add!(count, Int(res))
                 if !(metric isa SemiMetric) # not symmetric
-                    weight = evaluate(metric, data[q], data[p])
+                    dist = evaluate(metric, data[q], data[p])
                 end
-                res = add_edge!(graph, edgetype(graph)(q, p, weight))
+                res = add_edge!(graph, edgetype(graph)(q, p, dist))
                 Threads.atomic_add!(count, Int(res))
             end
         end
