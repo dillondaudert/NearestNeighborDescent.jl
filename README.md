@@ -2,7 +2,7 @@
 
 | **Documentation** | **Build Status** |
 |:-----------------:|:----------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 A Julia implementation of Nearest Neighbor Descent.
 
@@ -57,6 +57,9 @@ indices, distances = search(graph, queries, n_neighbors)
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://dillondaudert.github.io/NearestNeighborDescent.jl/stable
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://dillondaudert.github.io/NearestNeighborDescent.jl/dev
 
 [travis-img]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl.svg?branch=master
 [travis-url]: https://travis-ci.com/dillondaudert/NearestNeighborDescent.jl
