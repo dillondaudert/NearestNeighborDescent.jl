@@ -33,10 +33,12 @@
     true_dists = [.4 .4;
                   .6 .6]
 
-    graph = nndescent(data, 3, Euclidean())
-    inds, dists = search(graph, queries, 2)
+    for GraphT in [HeapKNNGraph, LockHeapKNNGraph]
+        graph = nndescent(GraphT, data, 3, Euclidean())
+        inds, dists = search(graph, queries, 2)
 
-    @test all(inds .== true_inds)
-    @test all(dists .== true_dists)
+        @test all(inds .== true_inds)
+        @test all(dists .== true_dists)
+    end
 
 end
