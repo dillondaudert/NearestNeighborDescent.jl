@@ -8,6 +8,8 @@ using Documenter, NearestNeighborDescent
 
 makedocs(
     modules=[NearestNeighborDescent],
+    format=Documenter.HTML(analytics="UA-154568964-1",
+                           canonical="https://dillondaudert.github.io/NearestNeighborDescent.jl/stable/"),
     sitename="NearestNeighborDescent.jl",
     authors="Dillon Daudert",
     pages = [
