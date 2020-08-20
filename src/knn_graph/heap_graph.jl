@@ -197,12 +197,12 @@ complexity of `𝒪(K)`.
 
 Try to add an edge `e`, indicating a new candidate nearest neighbor `e.dest` for
 vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `false`) if
-`e` is already in the heap or if `e.weight > top(heap).weight`. Otherwise return `true`.
+`e` is already in the heap or if `e.weight > first(heap).weight`. Otherwise return `true`.
 """
 function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
-    if e < top(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
-        # we know this edge is smaller than the top, so we can start by removing that
+    if e < first(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+        # we know this edge is smaller than the first, so we can start by removing that
         pop!(g.heaps[src(e)])
         push!(g.heaps[src(e)], e)
         return true
@@ -217,7 +217,7 @@ end
 Return the diameter of the set of KNNs of vertex `v`.
 """
 function knn_diameter(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V) where V
-    return 2 * weight(top(g.heaps[v]))
+    return 2 * weight(first(g.heaps[v]))
 end
 
 """

@@ -108,8 +108,8 @@ Similar to `add_edge!(g::HeapKNNGraph, e)`, but made thread-safe using locks.
 function LightGraphs.add_edge!(g::LockHeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
     lock(g.locks[src(e)]) do
-        if e < top(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
-            # we know this edge is smaller than the top, so we can start by removing that
+        if e < first(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
+            # we know this edge is smaller than the first, so we can start by removing that
             pop!(g.heaps[src(e)])
             push!(g.heaps[src(e)], e)
             return true

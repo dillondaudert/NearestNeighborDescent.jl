@@ -1,7 +1,7 @@
 name = "NearestNeighborDescent"
 uuid = "dd2c4c9e-a32f-5b2f-b342-08c2f244fce8"
 authors = ["Dillon Daudert <dillongdaudert@gmail.com>"]
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -12,7 +12,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-DataStructures = "0.15, 0.17"
+DataStructures = "0.18"
 Distances = "0.8, 0.9"
 LightGraphs = "1.3"
 Reexport = "0.2"

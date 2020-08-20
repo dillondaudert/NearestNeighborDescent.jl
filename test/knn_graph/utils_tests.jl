@@ -64,12 +64,12 @@
 
             KNNGraphs._heappush!(h, e, 1)
             @test length(h) == 1
-            @test top(h) == e
+            @test first(h) == e
 
             e2 = HeapKNNGraphEdge(1, 3, 1.) # new point, heappush! just replaces
             KNNGraphs._heappush!(h, e2, 1)
             @test length(h) == 1
-            @test top(h) == e2
+            @test first(h) == e2
         end
     end
 end # end utilities tests
