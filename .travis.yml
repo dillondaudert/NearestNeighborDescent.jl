@@ -9,7 +9,6 @@ before_script:
   - git config --global user.name Tester
   - git config --global user.email te@st.er
 julia:
-  - 1.4
   - 1.5
   - nightly
 script: travis_wait julia --project -e 'using Pkg; Pkg.test(; coverage=true)'
