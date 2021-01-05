@@ -35,12 +35,24 @@
             @test g isa GraphT{Int, Float64, Vector{Vector{Float64}}, Euclidean}
             @test is_valid_knn_graph(g)
 
+            # test construct from inds, dists matrices with matrix data input
+            test_data_mat = rand(2, 4)
+            DataViewT = typeof(collect(eachcol(test_data_mat)))
+            g = GraphT(test_data_mat, test_metric, test_inds, test_dsts)
+            @test g isa GraphT{Int, Float64, DataViewT, Euclidean}
+            @test is_valid_knn_graph(g)
+
             @test_throws ErrorException GraphT(test_data, test_metric, test_inds, rand(3, 4))
 
             k = 10
             n = length(small_data_f64)
             g = GraphT(small_data_f64, k, Euclidean())
             @test g isa GraphT{Int, Float64, Vector{Vector{Float64}}}
+            @test is_valid_knn_graph(g)
+
+            # construct new KNNGraph with matrix data input
+            g = GraphT(test_data_mat, 2, Euclidean())
+            @test g isa GraphT{Int, Float64, DataViewT, Euclidean}
             @test is_valid_knn_graph(g)
         end
     end

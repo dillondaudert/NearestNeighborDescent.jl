@@ -1,4 +1,3 @@
-# temporary draft implementation to eventually replace nn_descent.jl
 
 """
     nndescent(GraphT::Type{ApproximateKNNGraph}, data, n_neighbors, metric; kwargs...)
@@ -17,7 +16,7 @@ where precision is "roughly the fraction of true kNN allowed to be missed due to
 early termination". Lower values take longer but return more accurate results.
 """
 function nndescent(GraphT::Type{<:ApproximateKNNGraph},
-                   data::AbstractVector,
+                   data::AbstractVecOrMat,
                    n_neighbors::Integer,
                    metric::PreMetric;
                    max_iters = 10,
@@ -35,18 +34,6 @@ function nndescent(GraphT::Type{<:ApproximateKNNGraph},
         end
     end
     return graph
-end
-
-"""
-    nndescent(::Type{<:ApproximateKNNGraph}, data::AbstractMatrix, n_neighbors::Integer, metric::PreMetric; kwargs...)
-"""
-function nndescent(GraphT,
-                   data::AbstractMatrix,
-                   n_neighbors,
-                   metric;
-                   kwargs...
-                  )
-    return nndescent(GraphT, [col for col in eachcol(data)], n_neighbors, metric; kwargs...)
 end
 
 """

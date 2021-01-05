@@ -1,4 +1,3 @@
-# to eventually replace utils.jl
 
 """
 Validate the args and kwargs for nndescent.

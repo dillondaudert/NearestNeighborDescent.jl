@@ -74,6 +74,12 @@ function HeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: Abst
     return HeapKNNGraph{typeof(n_neighbors), U, D, M}(knn_heaps, data, n_neighbors, metric)
 end
 
+# convert matrix data input to vector of vectors (views)
+function HeapKNNGraph(data::D, args...; kwargs...) where D <: AbstractMatrix
+    return HeapKNNGraph(collect(eachcol(data)), args...; kwargs...)
+end
+
+
 # lightgraphs interface
 """
     edges(g::HeapKNNGraph)

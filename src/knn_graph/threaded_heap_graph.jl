@@ -35,6 +35,7 @@ function LockHeapKNNGraph(data::D,
     end
     return LockHeapKNNGraph{V, U, D, M}(knn_heaps, heap_locks, data, n_neighbors, metric)
 end
+
 function LockHeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: AbstractVector,
                                                                            M <: PreMetric}
 
@@ -64,6 +65,11 @@ function LockHeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: 
         end
     end
     return LockHeapKNNGraph{typeof(n_neighbors), U, D, M}(knn_heaps, heap_locks, data, n_neighbors, metric)
+end
+
+# convert matrix data input to vector of vectors (views)
+function LockHeapKNNGraph(data::D, args...; kwargs...) where D <: AbstractMatrix
+    return LockHeapKNNGraph(collect(eachcol(data)), args...; kwargs...)
 end
 
 """
