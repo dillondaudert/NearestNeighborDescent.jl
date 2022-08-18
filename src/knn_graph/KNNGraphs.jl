@@ -2,7 +2,7 @@ module KNNGraphs
 
 using DataStructures
 using Distances
-using LightGraphs
+using Graphs
 using SparseArrays
 
 include("abstract.jl")

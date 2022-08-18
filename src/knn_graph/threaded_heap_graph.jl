@@ -79,7 +79,7 @@ Similar to `inneighbors(g::HeapKNNGraph, v)`, except it acquires locks for the n
 as it iterates in order for this to be thread-safe.
 
 """
-@inline function LightGraphs.inneighbors(g::LockHeapKNNGraph{V}, v::V) where V
+@inline function Graphs.inneighbors(g::LockHeapKNNGraph{V}, v::V) where V
     neighbs = V[]
     for i in nv(g)
         lock(g.locks[i]) do
@@ -99,7 +99,7 @@ end
 Similar to `outneighbors(g::HeapKNNGraph, v)`, except locks the neighbor heap before collecting
 to make this thread-safe.
 """
-@inline function LightGraphs.outneighbors(g::LockHeapKNNGraph{V}, v::V) where V
+@inline function Graphs.outneighbors(g::LockHeapKNNGraph{V}, v::V) where V
     neighbs = lock(g.locks[v]) do
         dst.(g.heaps[v].valtree)
     end
@@ -111,7 +111,7 @@ end
 
 Similar to `add_edge!(g::HeapKNNGraph, e)`, but made thread-safe using locks.
 """
-function LightGraphs.add_edge!(g::LockHeapKNNGraph, e::HeapKNNGraphEdge)
+function Graphs.add_edge!(g::LockHeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
     lock(g.locks[src(e)]) do
         if e < first(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))

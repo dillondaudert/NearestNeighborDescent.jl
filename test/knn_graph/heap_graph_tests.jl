@@ -56,8 +56,8 @@
             @test is_valid_knn_graph(g)
         end
     end
-    @testset "LightGraphs interface tests" begin
-        # test LightGraphs interface methods exist on HeapKNNGraph, LockHeapKNNGraph
+    @testset "Graphs interface tests" begin
+        # test Graphs interface methods exist on HeapKNNGraph, LockHeapKNNGraph
         for GraphT in [HeapKNNGraph, LockHeapKNNGraph]
             for m in (edges, vertices, weights, edgetype, ne, nv, eltype)
                 @test hasmethod(m, (GraphT,))

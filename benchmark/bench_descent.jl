@@ -2,7 +2,7 @@ module BenchDescent
 
 using NearestNeighborDescent
 using NearestNeighborDescent: local_join!, get_neighbors!
-using LightGraphs
+using Graphs
 using Distances
 using BenchmarkTools
 using Random

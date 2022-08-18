@@ -19,8 +19,8 @@ abstract type ApproximateKNNGraph{V<:Integer,
 # interface
 Base.eltype(::ApproximateKNNGraph{V}) where V = V
 # all knn graphs are directed
-LightGraphs.is_directed(::Type{<:ApproximateKNNGraph}) = true
-LightGraphs.is_directed(::ApproximateKNNGraph) = true
+Graphs.is_directed(::Type{<:ApproximateKNNGraph}) = true
+Graphs.is_directed(::ApproximateKNNGraph) = true
 
 """
     knn_diameter(g::ApproximateKNNGraph{V}, v::V)
