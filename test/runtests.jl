@@ -1,7 +1,7 @@
 # tests
 using NearestNeighborDescent
 using NearestNeighborDescent.KNNGraphs
-using LightGraphs
+using Graphs
 using DataStructures
 using Distances
 using Test

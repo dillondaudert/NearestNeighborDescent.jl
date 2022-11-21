@@ -2,7 +2,7 @@ module NearestNeighborDescent
 
 using DataStructures
 using Distances
-using LightGraphs
+using Graphs
 using Reexport
 
 include("knn_graph/KNNGraphs.jl")

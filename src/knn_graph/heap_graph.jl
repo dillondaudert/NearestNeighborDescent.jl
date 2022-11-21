@@ -80,14 +80,14 @@ function HeapKNNGraph(data::D, args...; kwargs...) where D <: AbstractMatrix
 end
 
 
-# lightgraphs interface
+# graphs interface
 """
     edges(g::HeapKNNGraph)
 
 Return an iterator of the edges in this KNN graph. Note that mutating the edges
 while iterating through `edges(g)` may result in undefined behavior.
 """
-@inline function LightGraphs.edges(g::Union{HeapKNNGraph, LockHeapKNNGraph})
+@inline function Graphs.edges(g::Union{HeapKNNGraph, LockHeapKNNGraph})
     return (e for heap in g.heaps for e in heap.valtree)
 end
 
@@ -96,7 +96,7 @@ end
 
 Return an iterator of the vertices in the KNN graph.
 """
-@inline function LightGraphs.vertices(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}) where V
+@inline function Graphs.vertices(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}) where V
     return one(V):V(length(g.heaps))
 end
 
@@ -106,7 +106,7 @@ end
 Returns a SparseMatrixCSC{U, V} `w` where `w[j, i]` returns the weight of the
 directed edge from vertex `i` to `j`.
 """
-function LightGraphs.weights(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
+function Graphs.weights(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
     # dests, srcs, ws where weights[dests[k], srcs[k]] = ws[k]
     srcs, dsts = V[], V[]
     vals = U[]
@@ -123,7 +123,7 @@ end
 
 Return the type of the edges in `g`.
 """
-function LightGraphs.edgetype(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
+function Graphs.edgetype(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U}
     return HeapKNNGraphEdge{V, U}
 end
 
@@ -132,7 +132,7 @@ end
 
 Return true if the graph g has an edge from `s` to `d`, else false.
 """
-@inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, s, d) where V
+@inline function Graphs.has_edge(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, s, d) where V
     for e in g.heaps[s].valtree
         if dst(e) == d
             return true
@@ -145,7 +145,7 @@ end
 
 Return true if `g` contains the edge `e`.
 """
-@inline function LightGraphs.has_edge(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}},
+@inline function Graphs.has_edge(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}},
                                       e::HeapKNNGraphEdge{V, U}) where {V, U}
     return e in g.heaps[src(e)].valtree
 end
@@ -155,21 +155,21 @@ end
 
 Return true if vertex `v` is in `g`.
 """
-@inline LightGraphs.has_vertex(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V) where V = v in 1:nv(g)
+@inline Graphs.has_vertex(g::Union{HeapKNNGraph{V}, LockHeapKNNGraph{V}}, v::V) where V = v in 1:nv(g)
 
 """
     ne(g::HeapKNNGraph)
 
 Return the number of edges in `g`.
 """
-@inline LightGraphs.ne(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U} = g.n_neighbors*nv(g)
+@inline Graphs.ne(g::Union{HeapKNNGraph{V, U}, LockHeapKNNGraph{V, U}}) where {V, U} = g.n_neighbors*nv(g)
 
 """
     nv(g::HeapKNNGraph)
 
 Return the number of vertices in `g`.
 """
-@inline LightGraphs.nv(g::Union{HeapKNNGraph, LockHeapKNNGraph}) = length(g.heaps)
+@inline Graphs.nv(g::Union{HeapKNNGraph, LockHeapKNNGraph}) = length(g.heaps)
 
 """
     inneighbors(g::HeapKNNGraph, v)
@@ -182,7 +182,7 @@ HeapKNNGraph doesn't store inneighbors directly; it must find them by iterating
 over the outgoing edges for each vertex and saving those where `v == dst(e)`.
 Thus, this has time complexity `𝒪(nv(g)*K)`.
 """
-@inline function LightGraphs.inneighbors(g::HeapKNNGraph{V}, v::V) where V
+@inline function Graphs.inneighbors(g::HeapKNNGraph{V}, v::V) where V
     return collect(src(e) for e in edges(g) if dst(e) == v)
 end
 
@@ -196,7 +196,7 @@ Return a list of the neighbors of `v` connected by outgoing edges.
 HeapKNNGraph stores each vertex's outgoing edges in a heap, so this has a time
 complexity of `𝒪(K)`.
 """
-@inline LightGraphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g.heaps[v].valtree)
+@inline Graphs.outneighbors(g::HeapKNNGraph{V}, v::V) where V = dst.(g.heaps[v].valtree)
 
 """
     add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
@@ -205,7 +205,7 @@ Try to add an edge `e`, indicating a new candidate nearest neighbor `e.dest` for
 vertex `e.src`, by pushing onto `e.src`'s heap. This will fail (return `false`) if
 `e` is already in the heap or if `e.weight > first(heap).weight`. Otherwise return `true`.
 """
-function LightGraphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
+function Graphs.add_edge!(g::HeapKNNGraph, e::HeapKNNGraphEdge)
     # NOTE we can assume the invariants for heap knn graphs hold
     if e < first(g.heaps[src(e)]) && !has_edge(g, src(e), dst(e))
         # we know this edge is smaller than the first, so we can start by removing that

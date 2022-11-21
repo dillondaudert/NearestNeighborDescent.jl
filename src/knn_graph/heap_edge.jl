@@ -38,7 +38,7 @@ Base.eltype(e::HeapKNNGraphEdge{V}) where V = V
 
 @inline flag(e::HeapKNNGraphEdge) = e.flag
 @inline weight(e::HeapKNNGraphEdge) = e.weight
-# lightgraphs interface
-@inline LightGraphs.src(e::HeapKNNGraphEdge) = e.src
-@inline LightGraphs.dst(e::HeapKNNGraphEdge) = e.dst
-@inline LightGraphs.reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))
+# graphs interface
+@inline Graphs.src(e::HeapKNNGraphEdge) = e.src
+@inline Graphs.dst(e::HeapKNNGraphEdge) = e.dst
+@inline Graphs.reverse(e::E) where {E <: HeapKNNGraphEdge} = E(dst(e), src(e), weight(e), flag(e))

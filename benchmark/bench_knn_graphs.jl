@@ -1,7 +1,7 @@
 module BenchKNNGraphs
 
 using NearestNeighborDescent.KNNGraphs
-using LightGraphs
+using Graphs
 using Distances
 using BenchmarkTools
 using Random
