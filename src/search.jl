@@ -22,8 +22,8 @@ function search(graph::G,
     # lists of candidates, sorted by distance
     candidates = [BinaryMaxHeap{Tuple{U, V, Bool}}() for _ in 1:length(queries)]
     # a set of seen candidates per thread
-    seen_sets = [BitVector(undef, length(data)) for _ in 1:Threads.nthreads()]
-    Threads.@threads for i in eachindex(queries)
+    seen_sets = [BitVector(undef, length(data)) for _ in 1:Threads.maxthreadid()]
+    Threads.@threads :static for i in eachindex(queries) # :static needed to use threadid()
         # zero out seen
         seen = seen_sets[Threads.threadid()]
         seen .= false
