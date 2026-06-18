@@ -39,7 +39,7 @@ function search(graph::G,
             for v in outneighbors(graph, next_candidate[2])
                 if !seen[v]
                     dist = evaluate(metric, queries[i], data[v])
-                    if dist ≤ top(candidates[i])[1]
+                    if dist ≤ first(candidates[i])
                         pop!(candidates[i]) # pop maximum
                         push!(candidates[i], (dist, v, false))
                     end
