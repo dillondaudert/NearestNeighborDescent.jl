@@ -1,6 +1,6 @@
 # print information over iterations of nndescent
 using NearestNeighborDescent
-using LightGraphs
+using Graphs
 using Distances
 using MLDatasets
 using Statistics
