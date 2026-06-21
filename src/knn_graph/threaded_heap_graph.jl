@@ -52,15 +52,13 @@ function LockHeapKNNGraph(data::D, n_neighbors::Integer, metric::M) where {D <: 
     Threads.@threads for i in eachindex(data)
         k_idxs = sample_neighbors(n_points, n_neighbors, exclude=[i])
         for j in k_idxs
-            weight = evaluate(metric, data[i], data[j])
+            w_ij = evaluate(metric, data[i], data[j])
             lock(heap_locks[i]) do
-                _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, weight), n_neighbors)
+                _heappush!(knn_heaps[i], HeapKNNGraphEdge(i, j, w_ij), n_neighbors)
             end
-            if !(metric isa SemiMetric)
-                weight = evaluate(metric, data[j], data[i])
-            end
+            w_ji = metric isa SemiMetric ? w_ij : evaluate(metric, data[j], data[i])
             lock(heap_locks[j]) do
-                _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, weight), n_neighbors)
+                _heappush!(knn_heaps[j], HeapKNNGraphEdge(j, i, w_ji), n_neighbors)
             end
         end
     end

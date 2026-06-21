@@ -21,31 +21,43 @@ function search(graph::G,
     metric = graph.metric
     # lists of candidates, sorted by distance
     candidates = [BinaryMaxHeap{Tuple{U, V, Bool}}() for _ in 1:length(queries)]
-    # a set of seen candidates per thread
-    max_threads = @static VERSION >= v"1.9.0" ? Threads.maxthreadid() : Threads.nthreads()
-    seen_sets = [BitVector(undef, length(data)) for _ in 1:max_threads]
-    Threads.@threads :static for i in eachindex(queries) # :static needed to use threadid()
-        # zero out seen
-        seen = seen_sets[Threads.threadid()]
+    # A pool of reusable per-query "seen" buffers. Each task borrows one from the
+    # Channel and returns it when done, so a buffer is owned by whoever holds it
+    # rather than indexed by `threadid()` — this stays correct even if tasks migrate
+    # between threads. See https://julialang.org/blog/2023/07/PSA-dont-use-threadid/
+    nbuffers = min(Threads.maxthreadid(), length(queries))
+    seen_pool = Channel{BitVector}(nbuffers)
+    for _ in 1:nbuffers
+        put!(seen_pool, BitVector(undef, length(data)))
+    end
+    Threads.@threads for i in eachindex(queries)
+        # borrow a seen buffer, zero it out, and return it to the pool when done
+        seen = take!(seen_pool)
         seen .= false
-        # initialize with random
-        init_candidates!(candidates[i], seen, graph, queries[i], max_candidates)
-        while true
-            next_candidate = get_next_candidate!(candidates[i])
-            if isnothing(next_candidate)
-                break
-            end
+        try
+            # initialize with random
+            init_candidates!(candidates[i], seen, graph, queries[i], max_candidates)
+            while true
+                next_candidate = get_next_candidate!(candidates[i])
+                if isnothing(next_candidate)
+                    break
+                end
 
-            for v in outneighbors(graph, next_candidate[2])
-                if !seen[v]
-                    dist = evaluate(metric, queries[i], data[v])
-                    if dist ≤ first(candidates[i])
-                        pop!(candidates[i]) # pop maximum
-                        push!(candidates[i], (dist, v, false))
+                for v in outneighbors(graph, next_candidate[2])
+                    if !seen[v]
+                        dist = evaluate(metric, queries[i], data[v])
+                        # first(candidates[i]) is the farthest current candidate
+                        # (dist, idx, flag); compare against its distance component
+                        if dist ≤ first(candidates[i])[1]
+                            pop!(candidates[i]) # pop maximum
+                            push!(candidates[i], (dist, v, false))
+                        end
+                        seen[v] = true
                     end
-                    seen[v] = true
                 end
             end
+        finally
+            put!(seen_pool, seen)
         end
     end
 
