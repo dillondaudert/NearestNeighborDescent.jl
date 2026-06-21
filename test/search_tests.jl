@@ -41,4 +41,22 @@
         @test all(dists .== true_dists)
     end
 
+    @testset "graph traversal with small max_candidates" begin
+        # With max_candidates < nv(graph), init_candidates! leaves most nodes
+        # unseen, so search must walk the graph and refine the candidate queue via
+        # the `!seen[v]` branch (otherwise dead when max_candidates >= nv). Querying
+        # with in-sample points checks that this refinement converges: each query's
+        # true nearest neighbor is itself, at distance 0. This also guards the
+        # bounded-queue update against the scalar-vs-tuple comparison regression.
+        Random.seed!(0)
+        data = [rand(5) for _ in 1:200]
+        queries = data[1:25]
+        for GraphT in [HeapKNNGraph, LockHeapKNNGraph]
+            graph = nndescent(GraphT, data, 10, Euclidean(); max_iters=20)
+            inds, dists = search(graph, queries, 1; max_candidates=5)
+            @test inds[1, :] == 1:25            # each in-sample query retrieves itself
+            @test all(<(1e-9), dists[1, :])     # at (effectively) zero distance
+        end
+    end
+
 end
