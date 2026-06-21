@@ -46,7 +46,9 @@ function search(graph::G,
                 for v in outneighbors(graph, next_candidate[2])
                     if !seen[v]
                         dist = evaluate(metric, queries[i], data[v])
-                        if dist ≤ first(candidates[i])
+                        # first(candidates[i]) is the farthest current candidate
+                        # (dist, idx, flag); compare against its distance component
+                        if dist ≤ first(candidates[i])[1]
                             pop!(candidates[i]) # pop maximum
                             push!(candidates[i], (dist, v, false))
                         end
