@@ -37,6 +37,11 @@ jobs:
         uses: julia-actions/julia-runtest@v1
         with:
           coverage: true
+        env:
+          # Exercise the multithreaded code paths with an interactive thread present
+          # (worker nthreads()==2, interactive thread id 1) — the layout that surfaced
+          # the threadid() misuse on Julia 1.12.
+          JULIA_NUM_THREADS: '2,1'
       - name: Process and upload coverage with Coverage.jl
         if: matrix.version == '1' && matrix.os == 'ubuntu-latest'
         run: |
