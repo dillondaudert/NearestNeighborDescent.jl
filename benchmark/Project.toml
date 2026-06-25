@@ -1,3 +1,12 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+NearestNeighborDescent = "dd2c4c9e-a32f-5b2f-b342-08c2f244fce8"
 PkgBenchmark = "32113eaa-f34f-5b0d-bd6c-c81e245fc73d"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
