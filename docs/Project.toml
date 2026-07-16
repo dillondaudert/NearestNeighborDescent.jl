@@ -4,3 +4,4 @@ NearestNeighborDescent = "dd2c4c9e-a32f-5b2f-b342-08c2f244fce8"
 
 [compat]
 Documenter = "1"
+NearestNeighborDescent = "0.4.1"
